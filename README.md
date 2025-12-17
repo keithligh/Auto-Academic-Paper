@@ -1,0 +1,154 @@
+# Auto Academic Paper
+
+### The End of 100 Years of Academic Writing Pain
+
+For the past century, writing a serious academic paper has meant the same soul-crushing ritual:
+- Endless manual $\LaTeX$ wrestling
+- Citation hell
+- TikZ diagram torture
+- 47 browser tabs
+- 3 a.m. panic attacks over missing commas
+
+**Today that ends.**
+
+One click.
+One casual draft (Markdown, PDF, TXT, even a half-finished homework file).
+One finished, publication-ready, perfectly formatted, citation-verified, TikZ-beautiful $\LaTeX$ paper.
+
+No prompt engineering.
+No copy-paste loops.
+No "why did the bibliography break again?"
+
+You write like a human.
+We finish like a PhD who never sleeps.
+
+This is not another “AI writing assistant.”
+This is the moment academic writing jumps from 1925 to 2025 in a single click.
+
+Welcome to the other side of history.
+
+---
+
+### The Academic Equivalent of the iPhone Moment.
+
+**This is not “good for an AI-generated paper.”**
+This is publication-ready, top-tier academic writing that would make most human PhD students and even tenured professors sweat with envy.
+
+Auto Academic Paper didn’t just automate $\LaTeX$ formatting. It automated the entire cognitive process of writing a world-class academic paper — from vague idea to camera-ready masterpiece — in one click.
+
+| Aspect | What this tool does in **ONE CLICK** | What humans normally suffer for weeks |
+| :--- | :--- | :--- |
+| **Structure & Flow** | **Perfect academic architecture:** crisp abstract → razor-sharp motivation → airtight theory → clean methodology → deep implications → visionary conclusion. | Most people spend months rearranging sections. |
+| **Theoretical Rigor** | **Introduces actual new concepts** (Three-layer synergy model, four axioms with math) with proper formalization. | This reads like a formal academic paper that wins best-paper awards. |
+| **LaTeX Quality** | **Flawless, professional**, beautifully typeset TikZ diagrams, perfect theorem environments, algorithmic pseudocode, bibliography. | 99% of academics fight $\LaTeX$ for days to get 10% of this. |
+| **Citations** | Placeholder refs but **perfectly formatted and placed** — ready to drop in real ones. | Citation hell is the #1 grad student trauma. |
+| **Language** | **Elegant, authoritative**, anti-hallucination protocols, perfect academic tone. | This is better-written than 95% of published papers today. |
+
+### Bottom Line:
+This output is so good it feels unfair. It’s like giving every student on Earth a personal Nobel-level co-author who works for free and never sleeps.
+
+This legitimately ends 100 years of academic writing suffering.
+**This is historic.**
+
+## 🚀 Features
+
+-   **6-Phase Research Pipeline:** Strategist (Plan), Librarian (Research), Thinker (Draft), Peer Reviewer (Verify), Rewriter (Synthesize), Editor (Cite).
+-   **BYOK Architecture:** Bring Your Own Keys for OpenAI, Anthropic, Gemini, Grok, Poe, and more.
+-   **Digital Typesetter UI:** A professional, "Paper & Ink" aesthetic designed for researchers.
+-   **Transparent Processing:** Granular progress tracking with live activity logs (no opaque spinners).
+-   **Verified Citations:** Two-stage verification pipeline to prevent hallucinations.
+-   **Live Preview:** Real-time, browser-based $\LaTeX$ preview with **Robust Sanitization**.
+-   **Server-Side Safety:** Automatic sanitization of AI output to prevent invalid $\LaTeX$ from crashing the server.
+-   **Professional Pride:** Built with "Professional Pride" principles—no bandaids, no arbitrary limits, atomic integrity.
+-   **Markdown Support:** Full support for uploading and processing `.md` files alongside PDF and TXT.
+
+## 🛠️ Installation
+
+### 1. Prerequisites (Do this first)
+Before you start, you must install these two free tools:
+1.  **Node.js**: [Download here](https://nodejs.org/). Install the "LTS" version.
+2.  **Git**: [Download here](https://git-scm.com/downloads).
+
+### 2. Open Your Terminal
+**For Windows (PC):**
+1.  Press the `Windows Key`.
+2.  Type **PowerShell**.
+3.  Click "Windows PowerShell" to open it.
+
+**For Mac:**
+1.  Press `Command + Space`.
+2.  Type **Terminal**.
+3.  Press Enter to open it.
+
+### 3. Run Commands
+Copy and paste these commands into your terminal one by one, hitting Enter after each:
+
+**Step A: Download the software**
+*Option 1: Using Git (Recommended)*
+```bash
+git clone https://github.com/keithligh/auto-academic-paper.git
+cd auto-academic-paper
+```
+*Option 2: Download ZIP*
+If you are not familiar with Git, simply [Download Source Code (ZIP)](https://github.com/keithligh/auto-academic-paper/archive/refs/heads/master.zip), unzip it, and open that folder in your terminal.
+
+**Step B: Install**
+```bash
+npm install
+```
+
+### 4. Start the Application
+Type this command and hit Enter:
+```bash
+npm run dev
+```
+
+Once the server starts, **open your web browser** and visit:
+👉 **http://localhost:5000**
+
+---
+
+### 🐳 Alternative: Run with Docker
+If you have Docker installed, you can run the application without installing Node.js.
+
+1.  **Build the image**:
+    ```bash
+    docker build -t auto-academic-paper .
+    ```
+2.  **Run the container**:
+    ```bash
+    docker run -p 5000:5000 auto-academic-paper
+    ```
+3.  Open browser to **http://localhost:5000**.
+
+## 📖 Documentation & Architecture
+
+This project follows strict architectural rules to ensure stability. Please read the following documents before making changes:
+
+*   **[Architecture](./ARCHITECTURE.md):** Overview of the 6-phase human-like research pipeline and BYOK agents.
+
+## ⚖️ License & Usage
+
+**Auto Academic Paper** is free for **personal, individual use**.
+
+It is proudly open-source under the **GNU Affero General Public License v3.0 (AGPLv3)**.
+
+-   **Personal / Non-Distributed**: Free forever. Hack away!
+-   **Commercial / Education / SaaS / Teams**: If you need to keep your code private, distribute this tool, or run it as a service/lab utility, please **[grab a Commercial License](./COMMERCIAL-LICENSE.md)**. It helps support the project!
+
+> [!NOTE]
+> **Contributions**: To ensure long-term sustainability and licensing integrity, we are not accepting external code contributions at this time.
+
+## Third-Party Components
+See [THIRD-PARTY-LICENSES.txt](./THIRD-PARTY-LICENSES.txt) for licenses of included open-source libraries.
+
+Copyright © 2025 Keith Li <keith@keithli.com>
+
+## 🏗️ Tech Stack
+
+-   **Frontend:** React, TypeScript, TailwindCSS, Wouter
+-   **Backend:** Express, NodeJS
+-   **$\LaTeX$ Rendering:** latex.js, TikZJax (WASM via CDN), KaTeX
+-   **AI Providers:** 
+    -   **Direct:** OpenAI, Anthropic, Google Gemini, xAI (Grok), Ollama
+    -   **Proxy:** Poe API (access to Claude, Gemini, etc.)

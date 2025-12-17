@@ -1,0 +1,18 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+.env
+# .env.* # Commented out to allow .env.example
+uploads/
+*.log
+npm
+debug-*.html
+test-*.html
+attached_assets/
+*.db
+*.db-shm
+*.db-wal
+.agent/

@@ -1,0 +1,21 @@
+Auto Academic Paper — Third-Party Licenses
+Copyright © 2025 Keith Li
+
+This project uses the following open-source components:
+
+1. React                     — MIT License        — https://github.com/facebook/react
+2. TypeScript                 — Apache-2.0         — https://github.com/microsoft/TypeScript
+3. Tailwind CSS               — MIT License        — https://github.com/tailwindlabs/tailwindcss
+4. Wouter                     — MIT License        — https://github.com/molefrog/wouter
+5. Express                    — MIT License        — https://github.com/expressjs/express
+6. latex.js                   — MIT License        — https://github.com/michael-brade/LaTeX.js
+7. TikZJax                    — GPL-2.0-or-later   — https://github.com/artem-olv/tikzjax
+8. KaTeX                      — MIT License        — https://github.com/KaTeX/KaTeX
+9. Lucide React               — ISC License        — https://github.com/lucide-icons/lucide
+10. Zod                       — MIT License        — https://github.com/colinhacks/zod
+11. Drizzle ORM               — Apache-2.0         — https://github.com/drizzle-team/drizzle-orm
+12. Vite                      — MIT License        — https://github.com/vitejs/vite
+
+Full license texts for the above are included in the respective node_modules/<package>/LICENSE files or can be found at the URLs listed.
+
+All third-party licenses are compatible with AGPLv3.

@@ -1,0 +1,367 @@
+/* 
+ * Standard LaTeX Article Style
+ * Imports the bulletproof base styles.
+ */
+@import "latex-base.css";
+
+/* User Provided Reference CSS - Lora */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&display=swap');
+
+/* Document Container - The "Page" */
+.latex-preview {
+    font-family: 'Lora', 'Times New Roman', serif !important;
+    font-size: 11pt !important;
+    /* Body Text 11pt */
+    line-height: 1.8 !important;
+    /* Increased for readability */
+    color: #000 !important;
+    /* Pure Black */
+
+    /* A4 Dimensions */
+    width: 210mm;
+    max-width: 100%;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 25mm 25mm;
+    /* 25mm on all sides */
+
+    background-color: #fff !important;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+
+    /* Ensure no overflows */
+    overflow-x: hidden;
+}
+
+/* Vertical Rhythm - Lobotomized Owl */
+/* Enforce 1.5em top margin between direct children elements */
+.latex-preview>*+* {
+    margin-top: 1.5em;
+}
+
+/* Reset for internal elements */
+.latex-preview * {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+/* =============================================
+ * TYPOGRAPHY SPECIFICATION
+ * ============================================= */
+
+/* Title: 24pt, Bold, Center */
+.latex-preview .title,
+.latex-preview h1.title {
+    text-align: center;
+    font-size: 24pt;
+    font-weight: bold;
+    font-style: normal;
+    color: #000;
+    line-height: 1.2;
+}
+
+/* Author: 14pt, Italic, Center */
+.latex-preview .author {
+    text-align: center;
+    font-size: 14pt;
+    font-style: italic;
+    font-weight: normal;
+    margin-bottom: 0.5em;
+    /* Specific spacing usually needed inside header block */
+}
+
+/* Date: 12pt, Normal, Center */
+.latex-preview .date {
+    text-align: center;
+    font-size: 12pt;
+    font-style: normal;
+    font-weight: normal;
+    color: #000;
+}
+
+/* Abstract: 10pt, Italic, Justified, 4em L/R margin */
+.latex-preview .abstract,
+.latex-preview div.abstract {
+    margin: 0 4em 1.5em 4em;
+    font-size: 10pt;
+    font-style: italic;
+    text-align: justify;
+    line-height: 1.6;
+}
+
+.latex-preview .abstract-title {
+    text-align: center;
+    font-weight: bold;
+    font-style: normal;
+    font-variant: small-caps;
+    /* Common for abstract title even if styles differ */
+    font-size: 10pt;
+    margin-bottom: 0.5em;
+}
+
+/* Sections - Bold, 14pt, 1.5em spacing */
+.latex-preview h2,
+.latex-preview .section {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+    border-bottom: none;
+    /* Article doesn't underline sections by default */
+}
+
+/* Subsections - Bold, 12pt */
+.latex-preview h3,
+.latex-preview .subsection {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+}
+
+/* Sub-subsections - Bold, 11pt (Normal article class style) */
+.latex-preview h4,
+.latex-preview .subsubsection {
+    font-size: 11pt;
+    font-weight: bold;
+    font-style: normal;
+    margin-top: 1.0em;
+    margin-bottom: 0.5em;
+}
+
+/* Paragraphs */
+.latex-preview p {
+    margin-bottom: 1em;
+    text-align: justify;
+    text-indent: 0;
+    /* Reset global indent, intentional override */
+}
+
+/* =============================================
+ * REVEALED ELEMENTS (DEBUG / VISIBILITY)
+ *Added to solve "Where did my content go?" mystery
+ * ============================================= */
+.latex-preview .latex-warning {
+    color: #dc2626;
+    /* Red-600 */
+    font-family: monospace;
+    font-size: 0.9em;
+    border: 1px dashed #dc2626;
+    padding: 2px 4px;
+    background-color: #fef2f2;
+    display: block;
+    margin: 0.5em 0;
+}
+
+.latex-preview .latex-debug {
+    color: #6b7280;
+    /* Gray-500 */
+    font-family: monospace;
+    font-size: 0.8em;
+    background-color: #f3f4f6;
+    padding: 0 2px;
+    border-radius: 2px;
+    margin-right: 0.2em;
+}
+
+.latex-preview .latex-citation {
+    color: #2563eb;
+    /* Blue-600 */
+    font-weight: bold;
+}
+
+.latex-preview .latex-footnote {
+    color: #4b5563;
+    font-size: 0.85em;
+    vertical-align: super;
+}
+
+/* =============================================
+ * LISTS
+ * ============================================= */
+.latex-preview ul,
+.latex-preview ol {
+    margin: 1em 0;
+    padding-left: 2em;
+    /* Standard LaTeX indent */
+}
+
+/* Explicit style for itemize to ensure bullets appear */
+/* ROOT CAUSE FIX: latex-base.css sets 'li { list-style: none }' which blocks inheritance. 
+   We must target 'li' directly to override it. */
+.latex-preview ul.latex-itemize {
+    margin-left: 1em;
+    /* Ensure some indent */
+}
+
+.latex-preview ul.latex-itemize li {
+    list-style-type: disc !important;
+    list-style-position: outside !important;
+}
+
+/* Explicit style for enumerate */
+.latex-preview ol.latex-enumerate {
+    margin-left: 1em;
+}
+
+.latex-preview ol.latex-enumerate li {
+    list-style-type: decimal !important;
+    list-style-position: outside !important;
+}
+
+.latex-preview li {
+    margin-bottom: 0.5em;
+    padding-left: 0 !important;
+    /* Reset any padding, margin handles spacing */
+    text-align: justify;
+    display: list-item !important;
+    /* Force display mode */
+    /* Force display mode */
+}
+
+/* =============================================
+ * EQUATIONS
+ * ============================================= */
+/* FIX (v1.9.14): Target ACTUAL KaTeX output container */
+/* .equation-container does not exist in DOM */
+.latex-preview .katex-display {
+    margin: 0.5em 0;
+    text-align: center;
+    /* scaling logic handles width, visible allows wide content to sit in margins */
+    overflow: visible !important;
+    padding: 0.1em 0;
+    font-size: 1.15em;
+}
+
+/* =============================================
+ * ALGORITHMS (v1.9.15)
+ * ============================================= */
+.latex-preview .latex-algorithm {
+    margin: 1.5em 0;
+    padding: 1em;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    /* Default generic monospace */
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.latex-preview .latex-alg-line {
+    display: flex;
+    line-height: 1.5;
+}
+
+.latex-preview .latex-alg-lineno {
+    min-width: 2em;
+    color: #888;
+    user-select: none;
+    text-align: right;
+    margin-right: 1em;
+}
+
+.latex-preview .latex-alg-content {
+    flex: 1;
+}
+
+.latex-preview .latex-alg-keyword {
+    font-weight: bold;
+    color: #333;
+}
+
+/* =============================================
+ * CODE BLOCKS (Verbatim / Listings)
+ * ============================================= */
+.latex-preview .latex-verbatim {
+    margin: 1.5em 0;
+    padding: 1em;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+    white-space: pre;
+    /* Ensure whitespace is preserved */
+    color: #333;
+    line-height: 1.4;
+}
+
+/* =============================================
+ * TABLES (Refined v1.6.43)
+ * ============================================= */
+/* Wrapper for centering and scrolling */
+.latex-preview .table-wrapper {
+    width: 100%;
+    margin: 1.5em 0;
+    /* FIX (v1.9.109): Use block + text-align to center, NOT flex */
+    /* Flex + Center + Overflow causes the left side to be clipped off-screen */
+    display: block;
+    overflow-x: auto;
+    text-align: center;
+    /* Center inline-table if smaller than container */
+}
+
+/* Standard Table */
+.latex-preview table {
+    border-collapse: collapse;
+    /* FIX (v1.9.109): Allow table to exceed container width for scrolling */
+    width: auto;
+    min-width: 100%;
+    /* Expand to fill if smaller */
+    max-width: none;
+    /* remove 100% constraint */
+    margin: 0 auto;
+    /* Center within wrapper */
+    font-size: 10pt;
+    /* Tables often slightly smaller */
+    border-top: 2px solid #000;
+    /* Toprule */
+    border-bottom: 2px solid #000;
+    /* Bottomrule */
+}
+
+.latex-preview th,
+.latex-preview td {
+    padding: 0.5em 1em;
+    text-align: left;
+    /* FIX (v1.9.114): Remove global grey border to fix "extra grey lines" */
+    border-bottom: none;
+}
+
+/* Specific border class for \hline / \midrule */
+.latex-preview tr.with-border-bottom td {
+    border-bottom: 1px solid #ccc;
+}
+
+/* FIX (v1.9.48): Force left alignment for all elements inside tables (especially lists) */
+.latex-preview td *,
+.latex-preview th * {
+    text-align: left !important;
+}
+
+/* Remove border from last row */
+.latex-preview tr:last-child td {
+    border-bottom: none;
+}
+
+/* Fix for transparent borders on black bg (if dark mode supported later) 
+   But for now, enforce black borders as per 'Article' style */
+
+/* =============================================
+ * TIKZ DIAGRAMS
+ * ============================================= */
+.latex-preview .tikz-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2em 0;
+}
+
+.latex-preview .tikz-wrapper iframe {
+    border: none;
+    overflow: hidden;
+    /* Height is set dynamically by JS observer */
+}

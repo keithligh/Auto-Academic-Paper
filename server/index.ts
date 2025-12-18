@@ -4,6 +4,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+log("SERVER: OPENSOURCE REPO CONFIRMED (vTracer)");
 
 declare module 'http' {
   interface IncomingMessage {

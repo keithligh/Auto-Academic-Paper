@@ -136,19 +136,24 @@ export function processLatex(latex: string): SanitizeResult {
             .replace(/\\subparagraph\*?\s*\{([^{}]*)\}/g, '<strong>$1</strong> ')
             // Fallback: AI-hallucinated deep sections (e.g., \subsubssubsection) → normalize to h4
             .replace(/\\sub+section\*?\s*\{([^{}]*)\}/g, '<h4>$1</h4>')
-            .replace(new RegExp(`\\\\textbf\\{${nested}\\}`, 'g'), '<strong>$1</strong>')
-            .replace(new RegExp(`\\\\textit\\{${nested}\\}`, 'g'), '<em>$1</em>')
-            .replace(new RegExp(`\\\\emph\\{${nested}\\}`, 'g'), '<em>$1</em>')
-            .replace(new RegExp(`\\\\underline\\{${nested}\\}`, 'g'), '<u>$1</u>')
-            .replace(new RegExp(`\\\\texttt\\{${nested}\\}`, 'g'), '<code>$1</code>')
-            .replace(new RegExp(`\\\\textsc\\{${nested}\\}`, 'g'), '<span style="font-variant: small-caps;">$1</span>')
-            .replace(new RegExp(`\\\\textsf\\{${nested}\\}`, 'g'), '<span style="font-family: sans-serif;">$1</span>')
-            .replace(new RegExp(`\\\\text\\{${nested}\\}`, 'g'), '$1') // Support \text{...} by unwrapping
+            .replace(new RegExp(`\\\\+textbf\\{${nested}\\}`, 'g'), '<strong>$1</strong>')
+            .replace(new RegExp(`\\\\+textit\\{${nested}\\}`, 'g'), '<em>$1</em>')
+            .replace(new RegExp(`\\\\+emph\\{${nested}\\}`, 'g'), '<em>$1</em>')
+            .replace(new RegExp(`\\\\+underline\\{${nested}\\}`, 'g'), '<u>$1</u>')
+            .replace(new RegExp(`\\\\+texttt\\{${nested}\\}`, 'g'), '<code>$1</code>')
+            .replace(new RegExp(`\\\\+textsc\\{${nested}\\}`, 'g'), '<span style="font-variant: small-caps;">$1</span>')
+            .replace(new RegExp(`\\\\+textsf\\{${nested}\\}`, 'g'), '<span style="font-family: sans-serif;">$1</span>')
+            .replace(new RegExp(`\\\\+text\\{${nested}\\}`, 'g'), '$1') // Support \text{...} by unwrapping
             // v1.9.131: Support \textls[amount]{content}
             .replace(new RegExp(`\\\\textls(?:\\[(\\d+)\\])?\\{${nested}\\}`, 'g'), (m, amount, content) => {
                 const val = amount ? parseInt(amount) : 100; // Default 100
                 return `<span style="letter-spacing: ${val / 1000}em;">${content}</span>`;
             })
+            // FIX (v1.9.141): Support TeX/LaTeX logos
+            .replace(/\\TeX(\{\})?/g, '<span style="font-family: serif; letter-spacing: -0.1em;">T<span style="vertical-align: -0.2em; font-size: 0.8em;">E</span>X</span>')
+            .replace(/\\LaTeX(\{\})?/g, '<span style="font-family: serif; letter-spacing: -0.1em;">L<span style="font-size: 0.7em; vertical-align: 0.2em; margin-left: -0.21em; margin-right: -0.07em;">A</span>T<span style="vertical-align: -0.2em; font-size: 0.8em;">E</span>X</span>')
+            .replace(/\\textquotedblleft(\{\})?/g, '“')
+            .replace(/\\textquotedblright(\{\})?/g, '”')
             .replace(/\\textquoteleft(\{\})?/g, '‘')
             .replace(/\\textquoteright(\{\})?/g, '’')
             .replace(/\\textquotesingle/g, '’')
@@ -300,6 +305,24 @@ export function processLatex(latex: string): SanitizeResult {
             .replace(/>/g, '&gt;');
         return createPlaceholder(`<pre class="latex-verbatim"> ${escaped}</pre> `);
     });
+
+    // --- NORMALIZATION (v1.9.139 Fix) ---
+    // Fix hallucinations like \textscStrategist before Math Engine sees them.
+    // This must happen AFTER code block extraction (so we don't change verbatim code)
+    // but BEFORE processMath (so KaTeX doesn't choke on undefined commands).
+    // --- NORMALIZATION (v1.9.139 Fix) ---
+    // Fix hallucinations like \textscStrategist before Math Engine sees them.
+    // This must happen AFTER code block extraction (so we don't change verbatim code)
+    // but BEFORE processMath (so KaTeX doesn't choke on undefined commands).
+    content = content
+        .replace(/\\(textsc|textbf|textit|texttt|textsf)\s*\{/g, '\\$1{') // Fix spaces: \textsc { -> \textsc{
+        .replace(/\\(textsc|textbf|textit|texttt|textsf)\s*([A-Z][a-zA-Z0-9]*)/g, '\\$1{$2}') // Fix merged/spaced: \textsc Strategist -> \textsc{Strategist}
+        // FIX (v1.9.141+): Handle special Text commands globally (safe because Verbatim is already extracted)
+        .replace(/\\TeX(\{\})?/g, '<span style="font-family: serif; letter-spacing: -0.1em;">T<span style="vertical-align: -0.2em; font-size: 0.8em;">E</span>X</span>')
+        .replace(/\\LaTeX(\{\})?/g, '<span style="font-family: serif; letter-spacing: -0.1em;">L<span style="font-size: 0.7em; vertical-align: 0.2em; margin-left: -0.21em; margin-right: -0.07em;">A</span>T<span style="vertical-align: -0.2em; font-size: 0.8em;">E</span>X</span>')
+        .replace(/\\TikZ(\{\})?/g, '<span style="font-family: serif;">T<span style="font-style: italic; font-size: 0.9em;">i</span><span style="font-style: italic; font-size: 0.85em; vertical-align: -0.3em;">k</span>Z</span>')
+        .replace(/\\textquotedblleft(\{\})?/g, '“')
+        .replace(/\\textquotedblright(\{\})?/g, '”');
 
     // --- MATH ENGINE REFACTORING (Phase 3) ---
     // PASS MACROS (v1.9.42): Ensure inline math ($A$) gets the preamble definitions
@@ -577,9 +600,11 @@ export function processLatex(latex: string): SanitizeResult {
                     .replace(/^\\(?:ELSE|Else|ElsIf|ELSIF)\b/i, '<span class="latex-alg-keyword">else</span>')
                     .replace(/^\\(?:STATE|State|Statex)\s*/i, '')
                     .replace(/\\(?:RETURN|Return)\b/gi, '<span class="latex-alg-keyword">return</span>')
+                    .replace(/\\(?:FORALL|ForAll)\b/gi, '<span class="latex-alg-keyword">for all</span>')
                     .replace(/\\(?:REQUIRE|Require)\b/gi, '<span class="latex-alg-keyword">Require:</span>')
                     .replace(/\\(?:ENSURE|Ensure)\b/gi, '<span class="latex-alg-keyword">Ensure:</span>')
-                    .replace(/\\(?:COMMENT|Comment)\{([^}]*)\}/gi, '<span class="latex-alg-comment">// $1</span>');
+                    .replace(/\\(?:COMMENT|Comment)\{([^}]*)\}/gi, '<span class="latex-alg-comment">// $1</span>')
+                    .replace(/\\hfill/g, '<span style="float: right;"></span>');
 
                 const indentStyle = `style="padding-left: ${currentIndent * 1.5}em"`;
 
@@ -866,6 +891,10 @@ export function processLatex(latex: string): SanitizeResult {
 
     // 3. Apply Text Formatting (Bold, Italic, Unescape)
     content = parseLatexFormatting(content);
+
+
+
+
 
     // 3.5. SAFETY SWEEP: Residual Environment Cleanup
     // If any \begin{...} remains (malformed/unclosed), wrap it in <pre> to prevent raw text dump

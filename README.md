@@ -52,6 +52,8 @@ This legitimately ends 100 years of academic writing suffering.
 
 ## 🚀 Features
 
+![Content Generation Pipeline](Content-Generation-Pipeline.png)
+
 -   **6-Phase Research Pipeline:** Strategist (Plan), Librarian (Research), Thinker (Draft), Peer Reviewer (Verify), Rewriter (Synthesize), Editor (Cite).
 -   **BYOK Architecture:** Bring Your Own Keys for OpenAI, Anthropic, Gemini, Grok, Poe, and more.
 -   **Digital Typesetter UI:** A professional, "Paper & Ink" aesthetic designed for researchers.

@@ -16,3 +16,4 @@ attached_assets/
 *.db-shm
 *.db-wal
 .agent/
+

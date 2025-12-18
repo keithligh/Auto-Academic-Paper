@@ -26,7 +26,12 @@ export function processMath(latex: string, macros: Record<string, string> = {}):
                 displayMode,
                 throwOnError: false,
                 strict: false,
-                macros: { "\\eqref": "\\href{#1}{#1}", "\\label": "\\phantom{}", ...macros }
+                macros: {
+                    "\\eqref": "\\href{#1}{#1}",
+                    "\\label": "\\phantom{}",
+                    "\\textsc": "\\text{#1}", // FIX (v1.9.140): Polyfill for textsc in math mode
+                    ...macros
+                }
             });
 
             // STRATEGY: Auto-scale long SINGLE-LINE equations to fit container

@@ -68,7 +68,7 @@ export function LatexPreview({ latexContent, className = "" }: LatexPreviewProps
     try {
       // 1. Sanitize and Extract (Trojan Horse)
       const { sanitized, blocks, bibliographyHtml, hasBibliography } = processLatex(latexContent);
-      console.log("[LatexPreview] Sanitized Output Length:", sanitized.length);
+      console.log("[LatexPreview v2] Sanitized Output Length:", sanitized.length);
       // console.log("[LatexPreview] Sanitized Content Preview:", sanitized.substring(0, 500)); 
 
       // 2. Custom Parser (Replacements) - REPLACES latex.js

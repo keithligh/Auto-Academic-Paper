@@ -4,11 +4,11 @@
 
 For the past century, writing a serious academic paper has meant the same soul-crushing ritual:
 
-- Endless manual $\LaTeX$ wrestling
-- Citation hell
-- TikZ diagram torture
-- 47 browser tabs
-- 3 a.m. panic attacks over missing commas
+- Reading 50+ PDFs just to write one paragraph
+- Synthesizing conflicting theories into a coherent argument
+- Staring at a blank page to structure a novel theory
+- Battling the "Reference Manager" hell
+- And finally, wrestling with $\LaTeX$ until 3 a.m.
 
 **Today that ends.**
 

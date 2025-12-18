@@ -162,7 +162,7 @@ It is proudly open-source under the **GNU Affero General Public License v3.0 (AG
 -   **Personal / Non-Distributed**: Free forever. Hack away!
 -   **Commercial / Education / SaaS / Teams**: If you need to keep your modifications private, ignore the copyleft provisions, or run this as a service, please **[grab a Commercial License](./COMMERCIAL-LICENSE.md)**.
 
-**Your support is vital.** Purchasing a license directly funds the continued development of this independent, open-source project.
+**Your support is vital.** Strictly adhering to the AGPLv3 copyleft provisions protects the integrity and sustainability of this independent open-source project.
 
 > [!NOTE]
 > **Contributions**: To ensure long-term sustainability and licensing integrity, we are not accepting external code contributions at this time.

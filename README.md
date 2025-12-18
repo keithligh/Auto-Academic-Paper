@@ -13,6 +13,8 @@ For the past century, writing a serious academic paper has meant the same soul-c
 
 ![Auto Academic Paper Interface](Auto-Academic-Paper_Interface.png)
 
+> **Pre-Release / Beta Preview**: This software is in active early development. Users should expect bugs, occasional instability, and imperfect generation from the LLMs. The system is functional but requires active human verification for all outputs.
+
 One click.
 One casual draft (Markdown, PDF, TXT, even a half-finished homework file).
 One finished, publication-ready, perfectly formatted, citation-verified, TikZ-beautiful $\LaTeX$ paper.

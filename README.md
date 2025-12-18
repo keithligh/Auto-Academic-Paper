@@ -141,14 +141,28 @@ This project follows strict architectural rules to ensure stability. Please read
 
 *   **[Architecture](./ARCHITECTURE.md):** Overview of the 6-phase human-like research pipeline and BYOK agents.
 
+## 🔮 Roadmap
+
+We are constantly improving the system. Upcoming integrations include:
+
+-   **Add Tavily API support** (Enhanced Agentic Search)
+-   **Add Perplexity API support** (Deep Research Integration)
+
+See [TODO.md](./TODO.md) for the full list.
+
 ## ⚖️ License & Usage
 
 **Auto Academic Paper** is free for **personal, individual use**.
 
 It is proudly open-source under the **GNU Affero General Public License v3.0 (AGPLv3)**.
 
+> [!IMPORTANT]
+> **AGPL v3.0 Copyleft Notice**: This is strong copyleft software. If you modify this code and distribute it, or provide it as a service over a network (SaaS), you **MUST** release your modifications under the same AGPLv3 license.
+
 -   **Personal / Non-Distributed**: Free forever. Hack away!
--   **Commercial / Education / SaaS / Teams**: If you need to keep your code private, distribute this tool, or run it as a service/lab utility, please **[grab a Commercial License](./COMMERCIAL-LICENSE.md)**. It helps support the project!
+-   **Commercial / Education / SaaS / Teams**: If you need to keep your modifications private, ignore the copyleft provisions, or run this as a service, please **[grab a Commercial License](./COMMERCIAL-LICENSE.md)**.
+
+**Your support is vital.** Purchasing a license directly funds the continued development of this independent, open-source project.
 
 > [!NOTE]
 > **Contributions**: To ensure long-term sustainability and licensing integrity, we are not accepting external code contributions at this time.

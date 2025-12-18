@@ -1,6 +1,6 @@
 # Auto Academic Paper
 
-### The End of 100 Years of Academic Writing Pain
+### AI Agents That End 100 Years of Academic Writing Pain
 
 For the past century, writing a serious academic paper has meant the same soul-crushing ritual:
 - Endless manual $\LaTeX$ wrestling
@@ -22,10 +22,10 @@ No copy-paste loops.
 No "why did the bibliography break again?"
 
 You write like a human.
-We finish like a PhD who never sleeps.
+**AI Agents** finish like a team of PhDs who never sleep.
 
 This is not another “AI writing assistant.”
-This is the moment academic writing jumps from 1925 to 2025 in a single click.
+This is a team of **AI Agents** powered by state-of-the-art **LLMs** — the moment academic writing jumps from 1925 to 2025 in a single click.
 
 Welcome to the other side of history.
 
@@ -38,7 +38,7 @@ Welcome to the other side of history.
 **This is not “good for an AI-generated paper.”**
 This is publication-ready, top-tier academic writing that would make most human PhD students and even tenured professors sweat with envy.
 
-Auto Academic Paper didn’t just automate $\LaTeX$ formatting. It automated the entire cognitive process of writing a world-class academic paper — from vague idea to camera-ready masterpiece — in one click.
+Auto Academic Paper didn’t just automate $\LaTeX$ formatting. Its **AI Agents** — powered by **LLMs** like GPT, Claude, and Gemini — automate the entire cognitive process of writing a world-class academic paper — from vague idea to camera-ready masterpiece — in one click.
 
 | Aspect | What this tool does in **ONE CLICK** | What humans normally suffer for weeks |
 | :--- | :--- | :--- |
@@ -49,7 +49,7 @@ Auto Academic Paper didn’t just automate $\LaTeX$ formatting. It automated the
 | **Language** | **Elegant, authoritative**, anti-hallucination protocols, perfect academic tone. | This is better-written than 95% of published papers today. |
 
 ### Bottom Line:
-This output is so good it feels unfair. It’s like giving every student on Earth a personal Nobel-level co-author who works for free and never sleeps.
+This output is so good it feels unfair. It’s like giving every student on Earth a team of **AI Agent** co-authors — powered by world-class **LLMs** — who work for free and never sleep.
 
 This legitimately ends 100 years of academic writing suffering.
 **This is historic.**

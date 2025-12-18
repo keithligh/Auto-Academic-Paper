@@ -177,6 +177,22 @@ export function sanitizeLatexForExport(latex: string): string {
         );
     }
 
+    // 5. BACKTICK FIX: Convert markdown-style inline code to LaTeX \texttt{}
+    // Matches: `code here` (backtick-wrapped text)
+    // IMPORTANT: We must escape backslashes INSIDE the code, otherwise commands like \write
+    // will still be interpreted by LaTeX and break the document structure.
+    // Example: `\write18` -> \texttt{\textbackslash{}write18}
+    clean = clean.replace(/`([^`]+)`/g, (match, code) => {
+        // Escape backslashes first to prevent command interpretation
+        const escapedCode = code.replace(/\\/g, "\\textbackslash{}");
+        return `\\texttt{${escapedCode}}`;
+    });
+
+    // 6. ORPHAN BACKTICK FIX: Escape any remaining unmatched backticks
+    // In LaTeX, ` is an opening quote that expects a matching '.
+    // We convert orphan backticks to \textasciigrave{} to prevent parser errors.
+    clean = clean.replace(/`/g, "\\textasciigrave{}");
+
     return clean;
 }
 

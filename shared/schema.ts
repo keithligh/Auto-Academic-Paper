@@ -223,7 +223,7 @@ export const defaultAIConfig: AIConfig = {
   librarian: {
     provider: "poe",
     apiKey: "",
-    model: "Gemini25Pro-AAP",
+    model: "Gemini3Flash-AAP",
     isVerified: false
   },
   strategist: {

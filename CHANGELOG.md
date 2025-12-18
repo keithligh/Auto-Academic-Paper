@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-12-18
+
+### Added
+- **Librarian: Gemini 3 Flash Support**
+  - Added native support for `Gemini3Flash-AAP` custom bot in the Librarian agent configuration.
+- **README: Pre-Release Warning**
+  - Added "Beta Preview" disclaimer to setting expectations for LLM reliability.
+
+### Changed
+- **Librarian: Enforced Custom Bot Search**
+  - Removed standard Poe models (e.g., `Gemini-2.5-Pro`) from the Librarian whitelist.
+  - **Reasoning**: Only Custom Bots (AAP series) are guaranteed to have Web Search enabled correctly. Standard models caused "Search not supported" confusion.
+
 ## [1.0.1] - 2025-12-18
 
 ### Fixed

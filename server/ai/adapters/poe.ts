@@ -28,12 +28,12 @@ export class PoeProvider implements AIProvider {
         ];
 
         // Whitelist Check (Refined from test_whitelist_refined.ts)
+        // Whitelist Check (Refined from test_whitelist_refined.ts)
         const poeSearchModels = [
-            "Gemini-2.0-Flash",
-            "Gemini-2.5-Flash",
-            "Gemini-2.5-Pro",
+            // STRICT: Only Custom Bots with verified Web Search capability
             "Gemini25Pro-AAP",
-            "Gemini25Flash-AAP"
+            "Gemini25Flash-AAP",
+            "Gemini3Flash-AAP"
         ];
 
         // Only attach web_search parameter if the model supports it or if it's explicitly requested

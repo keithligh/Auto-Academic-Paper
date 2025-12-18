@@ -11,6 +11,8 @@ For the past century, writing a serious academic paper has meant the same soul-c
 
 **Today that ends.**
 
+![Auto Academic Paper Interface](Auto-Academic-Paper_Interface.png)
+
 One click.
 One casual draft (Markdown, PDF, TXT, even a half-finished homework file).
 One finished, publication-ready, perfectly formatted, citation-verified, TikZ-beautiful $\LaTeX$ paper.
@@ -30,6 +32,8 @@ Welcome to the other side of history.
 ---
 
 ### The Academic Equivalent of the iPhone Moment.
+
+![Paper Preview](paper_preview.jpg)
 
 **This is not “good for an AI-generated paper.”**
 This is publication-ready, top-tier academic writing that would make most human PhD students and even tenured professors sweat with envy.
@@ -63,6 +67,14 @@ This legitimately ends 100 years of academic writing suffering.
 -   **Server-Side Safety:** Automatic sanitization of AI output to prevent invalid $\LaTeX$ from crashing the server.
 -   **Professional Pride:** Built with "Professional Pride" principles—no bandaids, no arbitrary limits, atomic integrity.
 -   **Markdown Support:** Full support for uploading and processing `.md` files alongside PDF and TXT.
+
+## ⚠️ Human in the Loop (Disclaimer)
+
+**AI can make mistakes.**
+Although Auto Academic Paper employs 5 separate agents (including a dedicated Peer Reviewer) and strict anti-hallucination protocols to minimize errors, large language models are probabilistic, not deterministic.
+
+**You are the final author.**
+Always verify citations, equations, and logic. This tool is an engine, but you are the driver. Use it to accelerate your work, not to replace your judgment.
 
 ## 🛠️ Installation
 

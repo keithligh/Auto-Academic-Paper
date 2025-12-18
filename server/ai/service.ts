@@ -104,6 +104,7 @@ class AIProviderFactory {
     static create(config: any): AIProvider {
         switch (config.provider) {
             case "openai": return new OpenAICompatibleProvider(config);
+            case "custom": return new OpenAICompatibleProvider(config);
             case "poe": return new PoeProvider(config);
             case "grok": return new GrokProvider(config);
             case "openrouter": return new OpenRouterProvider(config);

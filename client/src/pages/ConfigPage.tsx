@@ -18,8 +18,8 @@ const providers = [
     { value: "anthropic", label: "Anthropic" },
     { value: "gemini", label: "Google Gemini" },
     { value: "grok", label: "xAI (Grok)" },
-    { value: "ollama", label: "Ollama (Local)" },
-    { value: "custom", label: "Custom / Other" },
+    { value: "ollama", label: "Ollama" },
+    { value: "custom", label: "Custom (OpenAI Compatible)" },
 ];
 
 const getPlaceholder = (provider: string) => {
@@ -214,13 +214,13 @@ function ProviderSection({ title, description, role, isExpanded, onToggle, showW
                                 />
                             </div>
 
-                            {providerConfig.provider === "custom" && (
+                            {(providerConfig.provider === "custom" || providerConfig.provider === "ollama") && (
                                 <div className="space-y-3 pt-2">
                                     <Label className="text-lg font-medium text-gray-700">Base URL</Label>
                                     <Input
                                         value={providerConfig.baseURL || ""}
                                         onChange={(e) => updateProviderConfig(role, { baseURL: e.target.value })}
-                                        placeholder="https://api.example.com/v1"
+                                        placeholder={providerConfig.provider === "ollama" ? "http://localhost:11434/v1" : "https://api.example.com/v1"}
                                         className="h-12 text-lg px-4 font-mono"
                                     />
                                 </div>

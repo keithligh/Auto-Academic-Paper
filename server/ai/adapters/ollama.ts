@@ -14,7 +14,7 @@ export class OllamaProvider implements AIProvider {
         this.model = config.model;
         this.client = new OpenAI({
             apiKey: "ollama", // Ollama doesn't require an API key
-            baseURL: "http://localhost:11434/v1",
+            baseURL: config.baseURL || "http://localhost:11434/v1",
         });
     }
 

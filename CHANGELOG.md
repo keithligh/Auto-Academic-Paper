@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Renamed "Ollama (Local)" to "Ollama" in the UI.
 
 ### Fixed
+- **Windows Startup Crash (`ENOTSUP`)**
+  - Removed `reusePort: true` from server configuration.
+  - This option is Linux-only and caused the server to crash immediately on Windows.
 - **Custom Provider Crash**
   - Fixed a critical bug where selecting the "Custom" provider would crash the backend.
   - Wired "Custom" to the standard OpenAI-compatible adapter.

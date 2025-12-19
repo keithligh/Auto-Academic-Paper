@@ -193,7 +193,183 @@ export function sanitizeLatexForExport(latex: string): string {
     // We convert orphan backticks to \textasciigrave{} to prevent parser errors.
     clean = clean.replace(/`/g, "\\textasciigrave{}");
 
+    // 7. BALANCE FIXER: Auto-close unclosed structures (Braces & Environments)
+    // This prevents "Emergency stop" or "File ended while scanning use of \@newl@bel" errors.
+    clean = fixLatexBalance(clean);
+
+    // 8. MATH MODE REPAIR (Ported from SanitizeLatexOutput)
+    // Matches: Closing $ (not escaped), followed by _ or ^, followed by a char or {...} block.
+    // Also naive fix: If we see _ or ^ not inside $, wrap it? 
+    // The previous SanitizeLatexOutput logic was:
+    // .replace(/(?<!\\)\$\s*([_^])\s*(\{[^}]*\}|[a-zA-Z0-9])/g, '$1$2$') -> This fixes "x$_i" error.
+    // But the user error "Missing $ inserted" suggests "x_i" (no $ at all).
+    // Let's add a safe heuristic: Replace `_` with `\_` if it's text? No, that breaks math.
+    // Better: use the user's error hint. They want math mode.
+    // We will apply the logic to Merge orphaned math if present, but for "Missing $" 
+    // we can't easily auto-detect text-vs-math without context.
+    // HOWEVER, we can reuse the "Universal Math Repair" from sanitizeLatexOutput which fixes
+    // common AI patterns like `$\theta$_t`.
+
+    clean = clean.replace(/(?<!\\)\$\s*([_^])\s*(\{[^}]*\}|[a-zA-Z0-9])/g, '$1$2$');
+
     return clean;
+}
+
+/**
+ * Scans LaTeX content and appends missing closing braces/environments.
+ * Rebuilds the string to inject closing tags INLINE when a mismatch occurs (e.g. before \end{document}).
+ */
+export function fixLatexBalance(latex: string): string {
+    let result = "";
+    const envStack: string[] = [];
+    let braceDepth = 0;
+
+    // State machine states
+    let state: "NORMAL" | "ESCAPE" | "COMMENT" = "NORMAL";
+    let i = 0;
+
+    while (i < latex.length) {
+        const char = latex[i];
+
+        if (state === "ESCAPE") {
+            // Escape mode: just copy and reset
+            result += char;
+            state = "NORMAL";
+            i++;
+            continue;
+        }
+
+        if (state === "COMMENT") {
+            result += char;
+            if (char === '\n') {
+                state = "NORMAL";
+            }
+            i++;
+            continue;
+        }
+
+        if (char === '\\') {
+            state = "ESCAPE";
+            // Check for \begin or \end BEFORE adding backslash to result?
+            // If we copy '\\', then we parse 'begin...' next loop? No.
+            // We must lookahead NOW to handle environments structurally.
+
+            const substr = latex.substring(i);
+            const beginMatch = substr.match(/^\\begin\s*\{([^}]+)\}/);
+            if (beginMatch) {
+                // Found \begin{...}
+                envStack.push(beginMatch[1]);
+                result += beginMatch[0];
+                i += beginMatch[0].length;
+                state = "NORMAL"; // Handled
+                continue;
+            }
+
+            const endMatch = substr.match(/^\\end\s*\{([^}]+)\}/);
+            if (endMatch) {
+                const envName = endMatch[1];
+                const fullTag = endMatch[0];
+
+                // Mismatch Detection and Fix
+                if (envStack.length > 0) {
+                    const lastEnv = envStack[envStack.length - 1];
+
+                    if (lastEnv === envName) {
+                        // Perfect match
+                        // First, close any dangling braces inside this env!
+                        while (braceDepth > 0) {
+                            result += "}";
+                            braceDepth--;
+                        }
+                        envStack.pop();
+                        result += fullTag;
+                    } else {
+                        // Mismatch! e.g. Expecting \end{itemize}, found \end{document}
+                        // OR Expecting \end{itemize}, found \end{enumerate}
+
+                        // Strategy: Check if 'envName' is deeper in the stack (e.g. document)
+                        // If we found \end{document}, we should close everything up to 'document'.
+                        const stackIndex = envStack.lastIndexOf(envName);
+
+                        if (stackIndex !== -1) {
+                            // The tag we found DOES exist in stack, but it's not at the top.
+                            // Example: Stack=[doc, itemize], Found=\end{doc}
+                            // We must close [itemize] first.
+
+                            // 1. Close dangling braces
+                            while (braceDepth > 0) {
+                                result += "}";
+                                braceDepth--;
+                            }
+
+                            // 2. Close intermediate environments
+                            // Pop until we reach stackIndex (exclusive)
+                            while (envStack.length - 1 > stackIndex) {
+                                const unclosed = envStack.pop()!;
+                                result += `\\end{${unclosed}}`;
+                                // Reset braces for new context? structure logic implies braces are local to context? 
+                                // Simplified: yes, assume 0 for now as we just closed them.
+                            }
+
+                            // 3. Now we are at [doc], and found \end{doc}. Match!
+                            envStack.pop();
+                            result += fullTag;
+
+                        } else {
+                            // The tag we found is NOT in stack. (Orphan end)
+                            // e.g. Stack=[doc], Found=\end{weird}
+                            // Treat as text/ignore? Or assume user made typo?
+                            // Safe bet: Keep it, don't change stack.
+                            result += fullTag;
+                        }
+                    }
+                } else {
+                    // Stack empty, orphan end. Keep it.
+                    result += fullTag;
+                }
+
+                i += fullTag.length;
+                state = "NORMAL";
+                continue;
+            }
+
+            // Not an env command, just regular escape (e.g. \text)
+            result += char;
+            i++;
+            continue;
+        }
+
+        if (char === '%') {
+            state = "COMMENT";
+            result += char;
+            i++;
+            continue;
+        }
+
+        // Structural Characters
+        if (char === '{') {
+            braceDepth++;
+        } else if (char === '}') {
+            if (braceDepth > 0) {
+                braceDepth--;
+            }
+        }
+
+        result += char;
+        i++;
+    }
+
+    // FINAL CLEANUP: Ensure everything is closed at EOF
+    while (braceDepth > 0) {
+        result += "}";
+        braceDepth--;
+    }
+    while (envStack.length > 0) {
+        const unclosed = envStack.pop()!;
+        result += `\\end{${unclosed}}`;
+    }
+
+    return result;
 }
 
 /**

@@ -47,6 +47,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Startup Integrity Check: Ensure DB is initialized before serving requests
+  const { verifyDatabaseIntegrity } = await import("./storage");
+  await verifyDatabaseIntegrity();
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

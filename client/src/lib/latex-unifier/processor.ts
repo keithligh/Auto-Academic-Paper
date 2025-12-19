@@ -272,7 +272,10 @@ export function processLatex(latex: string): SanitizeResult {
             .replace(/\\hrule/g, '<hr style="border: 0; border-top: 1px solid #ccc; margin: 1em 0;">')
             .replace(/\\footnotesize/g, '<span style="font-size: 0.8em;">')
             // Cleanup Residue: Handle raw (ref_X) that missed the compiler
-            .replace(/\(ref_(\d+)\)/g, '<span class="citation-placeholder">[ref_$1]</span>');
+            .replace(/\(ref_(\d+)\)/g, '<span class="citation-placeholder">[ref_$1]</span>')
+
+            // Special Symbols
+            .replace(/\\textcopyright(\{\})?/g, '©');
 
         // 6. Restore Math (Immediate Protection Restoration)
         protectedText = protectedText.replace(/__MATH_PROTECT_(\d+)__/g, (m, idx) => mathPlaceholders[parseInt(idx)]);

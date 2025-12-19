@@ -864,7 +864,28 @@ Return ONLY the JSON.`;
                 lastLogTime = now;
             }
         });
-        return result?.claims || result || [];
+
+        // AUTO-ACADEMIC-PAPER-RC1 FIX: Robust Claim Extraction
+        // Determine if we got a list or an object wrapper to prevent 'claims.slice is not a function' crash
+        if (Array.isArray(result)) {
+            return result.map(String);
+        }
+
+        if (result && typeof result === 'object') {
+            // 1. Precise match "claims"
+            if (Array.isArray(result.claims)) {
+                return result.claims.map((r: any) => String(r));
+            }
+
+            // 2. Fuzzy match: Look for ANY first array property (e.g. "extracted_claims", "list", etc.)
+            const candidates = Object.values(result).filter(val => Array.isArray(val));
+            if (candidates.length > 0) {
+                return (candidates[0] as any[]).map(r => String(r));
+            }
+        }
+
+        // Fallback if no array found at all
+        return [];
     }
 
     private async phase4_2_MapEvidence(ctx: PipelineContext, claims: string[]): Promise<any> {

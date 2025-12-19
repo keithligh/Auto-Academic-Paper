@@ -91,4 +91,29 @@ export class SQLiteStorage implements IStorage {
   }
 }
 
+/**
+ * Verifies that the database is properly initialized.
+ * Call this on server startup to catch missing tables early with a clear error.
+ */
+export async function verifyDatabaseIntegrity(): Promise<void> {
+  try {
+    // Simple query to check if the main table exists
+    await db.select().from(conversionJobs).limit(1);
+    console.log('[Storage] Database integrity check passed.');
+  } catch (error: any) {
+    if (error?.code === 'SQLITE_ERROR' && error?.message?.includes('no such table')) {
+      console.error('\n' + '='.repeat(70));
+      console.error('DATABASE NOT INITIALIZED');
+      console.error('='.repeat(70));
+      console.error('\nThe database tables do not exist. Please run:\n');
+      console.error('    npm run db:push\n');
+      console.error('This only needs to be done once after cloning the repository.');
+      console.error('='.repeat(70) + '\n');
+      process.exit(1);
+    }
+    // Re-throw other errors
+    throw error;
+  }
+}
+
 export const storage = new SQLiteStorage();

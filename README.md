@@ -126,6 +126,14 @@ If you are not familiar with Git, simply [Download Source Code (ZIP)](https://gi
 npm install
 ```
 
+**Step C: Initialize the Database**
+
+```bash
+npm run db:push
+```
+
+This creates the local SQLite database. You only need to run this once.
+
 ### 4. Start the Application
 
 Type this command and hit Enter:

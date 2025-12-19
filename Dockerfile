@@ -7,6 +7,7 @@ RUN npm install
 
 COPY . .
 RUN npm run build
+RUN npm run db:push
 
 EXPOSE 5000
 CMD ["npm", "start"]

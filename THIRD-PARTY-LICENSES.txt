@@ -29,9 +29,7 @@ This project relies on the following third-party open source software:
    License: MIT
    Link: https://gitlab.com/autokent/pdf-parse
 
-8. mammoth
-   License: BSD-2-Clause
-   Link: https://github.com/mwilliamson/mammoth.js
+
 
 For the full list of dependencies, please refer to 'package.json'.
 All libraries are used in compliance with their respective licenses.

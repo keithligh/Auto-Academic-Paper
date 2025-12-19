@@ -91,6 +91,12 @@ Before you start, you must install these two free tools:
 1. **Node.js**: [Download here](https://nodejs.org/). Install the "LTS" version.
 2. **Git**: [Download here](https://git-scm.com/downloads).
 
+> [!IMPORTANT]
+> **Windows Users**: You **MUST** install the C++ Build Tools or installation will fail.
+> 1. Download [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+> 2. During installation, select the **"Desktop development with C++"** workload.
+> 3. Click "Install" and restart your terminal.
+
 ### 2. Open Your Terminal
 
 **For Windows (PC):**

@@ -211,6 +211,7 @@ Copyright © 2025 Keith Li <keith@keithli.com>
 
 - **Frontend:** React, TypeScript, TailwindCSS, Wouter
 - **Backend:** Express, NodeJS
+- **Database:** SQLite (better-sqlite3) for high-performance local storage
 - **$\LaTeX$ Rendering:** latex.js, TikZJax (WASM via CDN), KaTeX
 - **AI Providers:** 
   - **Direct:** OpenAI, Anthropic, Google Gemini, xAI (Grok), Ollama

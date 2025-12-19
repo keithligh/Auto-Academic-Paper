@@ -1,21 +1,37 @@
-Auto Academic Paper — Third-Party Licenses
-Copyright © 2025 Keith Li
+This project relies on the following third-party open source software:
 
-This project uses the following open-source components:
+1. better-sqlite3
+   License: MIT
+   Author: Joshua Wise
+   Link: https://github.com/WiseLibs/better-sqlite3
 
-1. React                     — MIT License        — https://github.com/facebook/react
-2. TypeScript                 — Apache-2.0         — https://github.com/microsoft/TypeScript
-3. Tailwind CSS               — MIT License        — https://github.com/tailwindlabs/tailwindcss
-4. Wouter                     — MIT License        — https://github.com/molefrog/wouter
-5. Express                    — MIT License        — https://github.com/expressjs/express
-6. latex.js                   — MIT License        — https://github.com/michael-brade/LaTeX.js
-7. TikZJax                    — GPL-2.0-or-later   — https://github.com/artem-olv/tikzjax
-8. KaTeX                      — MIT License        — https://github.com/KaTeX/KaTeX
-9. Lucide React               — ISC License        — https://github.com/lucide-icons/lucide
-10. Zod                       — MIT License        — https://github.com/colinhacks/zod
-11. Drizzle ORM               — Apache-2.0         — https://github.com/drizzle-team/drizzle-orm
-12. Vite                      — MIT License        — https://github.com/vitejs/vite
+2. drizzle-orm
+   License: Apache-2.0
+   Link: https://github.com/drizzle-team/drizzle-orm
 
-Full license texts for the above are included in the respective node_modules/<package>/LICENSE files or can be found at the URLs listed.
+3. express
+   License: MIT
+   Link: https://github.com/expressjs/express
 
-All third-party licenses are compatible with AGPLv3.
+4. React
+   License: MIT
+   Link: https://github.com/facebook/react
+
+5. KaTeX
+   License: MIT
+   Link: https://github.com/KaTeX/KaTeX
+
+6. TikZJax
+   License: MIT
+   Link: https://github.com/kisonecat/tikzjax
+
+7. pdf-parse
+   License: MIT
+   Link: https://gitlab.com/autokent/pdf-parse
+
+8. mammoth
+   License: BSD-2-Clause
+   Link: https://github.com/mwilliamson/mammoth.js
+
+For the full list of dependencies, please refer to 'package.json'.
+All libraries are used in compliance with their respective licenses.

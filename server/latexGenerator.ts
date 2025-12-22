@@ -34,7 +34,14 @@ function formatEnhancement(enh: Enhancement, references: { key: string }[]): str
     // Removed: symbol type no longer has special handling
     // All enhancements (including symbol) are placed in their designated section
 
-    return `\\subsection*{${title}}\n${desc}\n\n${content}\n\n`;
+    // Enforce [H] placement for tables and figures to prevent drifting
+    // Regex: Find \begin{table}[ignore old opts] or \begin{table} and replace with \begin{table}[H]
+    const contentFixed = content
+        .replace(/\\begin\{table\}(\[.*?\])?/gi, "\\begin{table}[H]")
+        .replace(/\\begin\{figure\}(\[.*?\])?/gi, "\\begin{figure}[H]")
+        .replace(/\\begin\{algorithm\}(\[.*?\])?/gi, "\\begin{algorithm}[H]");
+
+    return `\\subsection*{${title}}\n${desc}\n\n${contentFixed}\n\n`;
 }
 
 function formatAuthorInfo(name?: string, affiliation?: string): string {
@@ -225,6 +232,8 @@ export async function generateLatex(
 \\usepackage{algorithm}
 \\usepackage{algpseudocode}
 \\usepackage{tabularx}
+\\usepackage{booktabs} % Fixes \\toprule crashes
+\\usepackage{float}    % Fixes table drifting with [H]
 ${cjkPreamble}
 
 % TikZ and diagram packages
@@ -295,15 +304,29 @@ ${abstract}
                 latex += `\\section{${secName}}\n\n`;
 
                 // --- INLINE ENHANCEMENT PLACEMENT ---
+                // Improved Matching Logic (v2.0): Robust Normalization
+                const normalizeSectionName = (s: string) => {
+                    return s.toLowerCase()
+                        .replace(/^(section|part|chapter)\s+/i, "") // Remove "Section" prefix
+                        .replace(/^(\d+|[xmivlc]+)\s*[.:-]\s*/i, "") // Remove numbering (1., IV., etc.)
+                        .replace(/[^a-z0-9]/g, ""); // Strip all punctuation/spaces for fuzzy comparison
+                };
+
+                const secNameNorm = normalizeSectionName(sec.name || "");
+
                 // Use processedEnhancements (cleaned of \usetikzlibrary)
                 const secEnhs = processedEnhancements.filter((e) => {
                     // symbol type now included in section placement
-                    const loc = (e.location || "").toLowerCase().trim();
-                    const name = sec.name?.toLowerCase().trim() || "";
-                    const nameNoNum = name.replace(/^\d+\.\s*/, "");
-                    return (
-                        name.includes(loc) || loc.includes(name) || nameNoNum.includes(loc) || loc.includes(nameNoNum)
-                    );
+                    const loc = (e.location || "").toLowerCase();
+                    const locNorm = normalizeSectionName(loc);
+
+                    // 1. Direct weak match (original logic)
+                    if (sec.name?.toLowerCase().includes(loc) || loc.includes(sec.name?.toLowerCase() || "")) return true;
+
+                    // 2. Normalized strict match (handles "IV. Methodology" vs "Methodology")
+                    if (secNameNorm.includes(locNorm) || locNorm.includes(secNameNorm)) return true;
+
+                    return false;
                 });
 
                 // Insert enhancements immediately after header

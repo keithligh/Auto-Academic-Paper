@@ -1,3 +1,5 @@
+import { json } from "express";
+
 /**
  * Fix JSON escaping issues from AI responses.
  * 
@@ -53,10 +55,6 @@ export function fixAIJsonEscaping(jsonString: string): string {
 }
 
 
-/**
- * Sanitize AI-generated LaTeX for the server-side compiler.
- * This acts as a safety net for things the prompt failed to prevent.
- */
 /**
  * Sanitize AI-generated LaTeX for the server-side compiler.
  * This acts as a safety net for things the prompt failed to prevent.
@@ -132,17 +130,185 @@ export function sanitizeLatexOutput(text: string): string {
  * This runs "Just-In-Time" before download to fix common compilation errors
  * that might be tolerated by the web preview but crash pdflatex.
  */
+/**
+ * Context-Aware Ampersand Sanitizer (The "Smart" Fix)
+ * Parsed LaTeX structure to distinguish between:
+ * - Alignment Tabs (& in tables/math): PROTECT
+ * - Text Ampersands (R&D, Unity & Catalog): ESCAPE (\&)
+ * - Preamble/Verbatim (& in \usepackage or \url): PROTECT
+ */
+function escapeTextAmpersands(latex: string): string {
+    // 0. PREAMBLE PROTECTION (Critical Fix)
+    // We must NOT escape & in \usepackage[...], \documentclass[...], etc.
+    const docStart = latex.indexOf('\\begin{document}');
+    let preamble = "";
+    let body = latex;
+
+    if (docStart !== -1) {
+        preamble = latex.substring(0, docStart);
+        body = latex.substring(docStart);
+    } else {
+        // Fallback: If no document environment found (snippet?), process everything.
+        // But warning: this might inadvertently break top-level commands if it's a preamble-only snippet.
+        // Assuming body for safety if unsure.
+    }
+
+    let result = '';
+    const envStack: string[] = [];
+    // Environments where & is structural
+    const structuralEnvs = new Set([
+        'tabular', 'tabular*', 'tabularx', 'longtable',
+        'align', 'align*', 'alignat', 'split', 'cases',
+        'array', 'matrix', 'bmatrix', 'pmatrix', 'vmatrix', 'Vmatrix'
+    ]);
+    // Commands whose arguments are verbatim/code (SKIP sanitization inside)
+    const verbatimCmds = new Set(['url', 'href', 'code', 'verb']);
+
+    let i = 0;
+    while (i < body.length) {
+        const char = body[i];
+
+        // 1. Handle Escapes / Commands
+        if (char === '\\') {
+            const substr = body.substring(i);
+
+            // 1a. Detect Verbatim Commands (\url{...})
+            // Optimization: check if next chars match any verbatim cmd
+            const cmdMatch = substr.match(/^\\([a-zA-Z@]+)/);
+            if (cmdMatch) {
+                const cmdName = cmdMatch[1];
+
+                // If it's a verbatim command, skip the command AND its argument
+                if (verbatimCmds.has(cmdName)) {
+                    // Copy command (\url)
+                    result += cmdMatch[0];
+                    i += cmdMatch[0].length;
+
+                    // Check for optional arg [] (skip it)
+                    if (i < body.length && body[i] === '[') {
+                        let bracketDepth = 1;
+                        result += '[';
+                        i++;
+                        while (i < body.length && bracketDepth > 0) {
+                            if (body[i] === '[') bracketDepth++;
+                            else if (body[i] === ']') bracketDepth--;
+                            result += body[i];
+                            i++;
+                        }
+                    }
+
+                    // Check for mandatory arg {} (skip it)
+                    if (i < body.length && body[i] === '{') {
+                        let braceDepth = 1;
+                        result += '{';
+                        i++;
+                        while (i < body.length && braceDepth > 0) {
+                            // Simple brace counting (ignoring escapes inside url is actually usually correct for latex parsers too)
+                            if (body[i] === '{') braceDepth++;
+                            else if (body[i] === '}') braceDepth--;
+                            result += body[i];
+                            i++;
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            // 1b. Detect Environment Start
+            const beginMatch = substr.match(/^\\begin\s*\{([^}]+)\}/);
+            if (beginMatch) {
+                envStack.push(beginMatch[1]);
+                result += beginMatch[0];
+                i += beginMatch[0].length;
+                continue;
+            }
+
+            // 1c. Detect Environment End
+            const endMatch = substr.match(/^\\end\s*\{([^}]+)\}/);
+            if (endMatch) {
+                const envName = endMatch[1];
+                if (envStack.length > 0) {
+                    const last = envStack[envStack.length - 1];
+                    // Strict matching + normalization for aligned environments
+                    if (last === envName || last.replace(/\*/, '') === envName.replace(/\*/, '') || structuralEnvs.has(last)) {
+                        envStack.pop();
+                    }
+                }
+                result += endMatch[0];
+                i += endMatch[0].length;
+                continue;
+            }
+
+            // Regular Escape or other command
+            // Copy backslash
+            result += char;
+            i++;
+            // Copy next char literal
+            if (i < body.length) {
+                result += body[i];
+                i++;
+            }
+            continue;
+        }
+
+        // 2. Handle Comments
+        if (char === '%') {
+            result += char;
+            i++;
+            while (i < body.length && body[i] !== '\n') {
+                result += body[i];
+                i++;
+            }
+            continue;
+        }
+
+        // 3. Handle Ampersand
+        if (char === '&') {
+            let isStructural = false;
+            // Check stack (from top down)
+            for (let j = envStack.length - 1; j >= 0; j--) {
+                const env = envStack[j].replace(/\*$/, ''); // Normalize align*
+                if (structuralEnvs.has(env)) {
+                    isStructural = true;
+                    break;
+                }
+            }
+
+            if (isStructural) {
+                result += '&'; // Keep alignment tab
+            } else {
+                result += '\\&'; // Escape text ampersand
+            }
+            i++;
+            continue;
+        }
+
+        // Default: Copy char
+        result += char;
+        i++;
+    }
+
+    // Recombine (Preamble Unchanged + Sanitized Body)
+    return preamble + result;
+}
+
 export function sanitizeLatexForExport(latex: string): string {
     if (!latex) return "";
     let clean = latex;
 
-    // 1. SAFETY NET: Escape orphaned "ref_X" that completely missed the compiler
-    // e.g. "term (ref_12) implies" -> "term (ref\_12) implies"
-    // This prevents "Missing $ inserted" errors without breaking math (x_1).
+    // 0. RUNAWAY ARGUMENT PROTECTION
+    // NOTE: The "Cascade Stopper" (force-closing at paragraph breaks) was REMOVED.
+    // It created orphan braces that caused cascading compile errors.
+    // We now rely on fixLatexBalance() at EOF for unclosed structures.
+
+    // Splitter - Break valid commands that incorrectly span paragraphs.
+    // This is safe because it preserves both { and }.
+    clean = clean.replace(/(\\(?:textbf|textit|texttt|textsc))\{([^{}\n]+?)\n\s*\n([^{}\n]+?)\}/g, '$1{$2}\n\n$1{$3}');
+
+    // 1. SAFETY NET: Escape orphaned "ref_X"
     clean = clean.replace(/\(ref_(\d+)\)/g, "(ref\\_$1)");
 
-    // 2. ALGORITHM PACKAGE FIX: Normalize uppercase commands to algpseudocode (mixed-case)
-    // Fixes "Undefined control sequence \REQUIRE" errors
+    // 2. ALGORITHM PACKAGE FIX
     clean = clean.replace(/\\REQUIRE/g, '\\Require');
     clean = clean.replace(/\\ENSURE/g, '\\Ensure');
     clean = clean.replace(/\\STATE/g, '\\State');
@@ -157,8 +323,7 @@ export function sanitizeLatexForExport(latex: string): string {
     clean = clean.replace(/\\RETURN/g, '\\Return');
     clean = clean.replace(/\\COMMENT/g, '\\Comment');
 
-    // 3. ALGORITHM TEXT MODE FIX: Remove \text{} wrappers that cause math mode conflicts
-    // In algorithm environments, we're already in text mode, so \text{} causes "Missing $ inserted" errors
+    // 3. ALGORITHM TEXT MODE FIX
     clean = clean.replace(/\\text\{if\s*\}/g, 'if ');
     clean = clean.replace(/\\text\{then\s*\}/g, 'then ');
     clean = clean.replace(/\\text\{else\s*\}/g, 'else ');
@@ -167,49 +332,42 @@ export function sanitizeLatexForExport(latex: string): string {
     clean = clean.replace(/\\text\{while\s*\}/g, 'while ');
     clean = clean.replace(/\\text\{do\s*\}/g, 'do ');
     clean = clean.replace(/\\text\{return\s*\}/g, 'return ');
-    clean = clean.replace(/\\text\{([A-Z][a-zA-Z]*)\}/g, '$1'); // Remove \text{} from identifiers like \text{Integrity}
+    clean = clean.replace(/\\text\{([A-Z][a-zA-Z]*)\}/g, '$1');
 
-    // 4. Ensure inputenc is present for UTF8 compatibility
+    // 4. PACKAGE INJECTION (Belt & Suspenders)
     if (!clean.includes("\\usepackage[utf8]{inputenc}")) {
-        clean = clean.replace(
-            /\\documentclass(\[[^\]]*\])?\{[^}]+\}/,
-            (match) => `${match}\n\\usepackage[utf8]{inputenc}`
-        );
+        clean = clean.replace(/\\documentclass(\[[^\]]*\])?\{[^}]+\}/, (m) => `${m}\n\\usepackage[utf8]{inputenc}`);
+    }
+    if (!clean.includes("\\usepackage{booktabs}")) {
+        clean = clean.replace(/\\documentclass(\[[^\]]*\])?\{[^}]+\}/, (m) => `${m}\n\\usepackage{booktabs}`);
+    }
+    if (!clean.includes("\\usepackage{float}")) {
+        clean = clean.replace(/\\documentclass(\[[^\]]*\])?\{[^}]+\}/, (m) => `${m}\n\\usepackage{float}`);
     }
 
-    // 5. BACKTICK FIX: Convert markdown-style inline code to LaTeX \texttt{}
-    // Matches: `code here` (backtick-wrapped text)
-    // IMPORTANT: We must escape backslashes INSIDE the code, otherwise commands like \write
-    // will still be interpreted by LaTeX and break the document structure.
-    // Example: `\write18` -> \texttt{\textbackslash{}write18}
-    clean = clean.replace(/`([^`]+)`/g, (match, code) => {
-        // Escape backslashes first to prevent command interpretation
+    // 5. PLACEMENT ENFORCEMENT ([H])
+    clean = clean.replace(/\\begin\{(table|figure|algorithm)(\*?)\}(?:\[[^\]]*\])?/g, '\\begin{$1$2}[H]');
+
+    // 6. CONTEXT-AWARE & SANITIZATION (The Smart Fix)
+    // Runs state machine to safely escape & in text only
+    clean = escapeTextAmpersands(clean);
+
+    // 7. BACKTICK FIX
+    // CRITICAL: Regex must NOT span lines ([^`\n] not [^`])!
+    // If AI generates an orphan backtick, the old regex would match to the NEXT backtick
+    // anywhere in the document, corrupting all LaTeX commands in between.
+    clean = clean.replace(/`([^`\n]+)`/g, (match, code) => {
         const escapedCode = code.replace(/\\/g, "\\textbackslash{}");
         return `\\texttt{${escapedCode}}`;
     });
 
-    // 6. ORPHAN BACKTICK FIX: Escape any remaining unmatched backticks
-    // In LaTeX, ` is an opening quote that expects a matching '.
-    // We convert orphan backticks to \textasciigrave{} to prevent parser errors.
+    // 8. ORPHAN BACKTICK FIX
     clean = clean.replace(/`/g, "\\textasciigrave{}");
 
-    // 7. BALANCE FIXER: Auto-close unclosed structures (Braces & Environments)
-    // This prevents "Emergency stop" or "File ended while scanning use of \@newl@bel" errors.
+    // 9. BALANCE FIXER
     clean = fixLatexBalance(clean);
 
-    // 8. MATH MODE REPAIR (Ported from SanitizeLatexOutput)
-    // Matches: Closing $ (not escaped), followed by _ or ^, followed by a char or {...} block.
-    // Also naive fix: If we see _ or ^ not inside $, wrap it? 
-    // The previous SanitizeLatexOutput logic was:
-    // .replace(/(?<!\\)\$\s*([_^])\s*(\{[^}]*\}|[a-zA-Z0-9])/g, '$1$2$') -> This fixes "x$_i" error.
-    // But the user error "Missing $ inserted" suggests "x_i" (no $ at all).
-    // Let's add a safe heuristic: Replace `_` with `\_` if it's text? No, that breaks math.
-    // Better: use the user's error hint. They want math mode.
-    // We will apply the logic to Merge orphaned math if present, but for "Missing $" 
-    // we can't easily auto-detect text-vs-math without context.
-    // HOWEVER, we can reuse the "Universal Math Repair" from sanitizeLatexOutput which fixes
-    // common AI patterns like `$\theta$_t`.
-
+    // 10. MATH MODE REPAIR
     clean = clean.replace(/(?<!\\)\$\s*([_^])\s*(\{[^}]*\}|[a-zA-Z0-9])/g, '$1$2$');
 
     return clean;

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2025-12-22
+
+### Fixed
+- **LaTeX Export: Preamble-Safe Ampersand Sanitization**
+  - The context-aware `&` sanitizer now **skips the preamble** (everything before `\begin{document}`).
+  - **Root Cause**: `\usepackage[sort&compress]{natbib}` was being corrupted to `sort\&compress`, causing "Unknown option" errors.
+  - **Fix**: Split document at `\begin{document}`, sanitize only the body, leave preamble untouched.
+- **LaTeX Export: Removed "Cascade Stopper" Regex**
+  - Removed the regex that force-closed `\texttt{`, `\textbf{}` etc. at paragraph breaks.
+  - **Root Cause**: The regex created **orphan closing braces** that broke document structure. Example: `\texttt{code\n\nmore}` became `\texttt{code}\n\nmore}` — the trailing `}` closed parent structures prematurely.
+  - **Lesson**: Rely on `fixLatexBalance()` at EOF instead of aggressive mid-document closure.
+- **LaTeX Export: Line-Limited Backtick Regex**
+  - Changed paired backtick matching from `/`([^`]+)`/g` to `/`([^`\n]+)`/g`.
+  - **Root Cause**: An orphan backtick (e.g., `` `moving target'' ``) would match the NEXT backtick anywhere in the document (even 100+ lines later), corrupting all `\cite{}`, `\subsection{}` commands in between by escaping their backslashes.
+  - **Fix**: Backtick pairs now cannot span newlines, limiting damage to a single line.
+- **LaTeX Export: URL/Verbatim Protection**
+  - The ampersand sanitizer now skips `\url{}`, `\href{}` command arguments.
+  - **Reason**: URLs like `example.com?a=1&b=2` should not have their `&` escaped.
+
 ## [1.0.3] - 2025-12-19
 
 ### Added

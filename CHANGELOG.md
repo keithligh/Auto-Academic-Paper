@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.4] - 2025-12-22
+## [1.0.5] - 2026-02-12T20:11:00+08:00
+
+### Added
+- **CJK (Chinese/Japanese/Korean) LaTeX Support**
+  - Auto-detects CJK characters (Unicode ranges `\u4e00-\u9fff`, `\u3040-\u309f`, `\u30a0-\u30ff`) in document content and abstract.
+  - **Export**: Injects `\usepackage{CJKutf8}` into preamble and wraps document body with `\begin{CJK*}{UTF8}{min}...\end{CJK*}` for correct PDF rendering.
+  - **Preview**: Two-site CJK stripping in `processor.ts`:
+    1. **Inline** (in `parseLatexFormatting`): Regex strips `\begin{CJK*}{enc}{font}content\end{CJK*}` → `content`.
+    2. **Document-level** (in command stripping section): Strips orphaned `\begin{CJK*}` open/close tags that survive outside inline contexts.
+  - **Design Decision**: Browsers render Unicode (including CJK) natively—the CJK wrapper is purely a LaTeX font selection mechanism. Stripping it for preview while preserving it for export ensures both paths work correctly.
+
+## [1.0.4] - 2025-12-22T00:00:00+08:00
 
 ### Fixed
 - **LaTeX Export: Preamble-Safe Ampersand Sanitization**
@@ -24,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The ampersand sanitizer now skips `\url{}`, `\href{}` command arguments.
   - **Reason**: URLs like `example.com?a=1&b=2` should not have their `&` escaped.
 
-## [1.0.3] - 2025-12-19
+## [1.0.3] - 2025-12-19T00:00:00+08:00
 
 ### Added
 - **Ollama BYOK Support**
@@ -41,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wired "Custom" to the standard OpenAI-compatible adapter.
   - Renamed UI label to **"Custom (OpenAI Compatible)"** for clarity.
 
-## [1.0.2] - 2025-12-18
+## [1.0.2] - 2025-12-18T00:00:00+08:00
 
 ### Added
 - **Librarian: Gemini 3 Flash Support**
@@ -54,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed standard Poe models (e.g., `Gemini-2.5-Pro`) from the Librarian whitelist.
   - **Reasoning**: Only Custom Bots (AAP series) are guaranteed to have Web Search enabled correctly. Standard models caused "Search not supported" confusion.
 
-## [1.0.1] - 2025-12-18
+## [1.0.1] - 2025-12-18T00:00:00+08:00
 
 ### Fixed
 - **LaTeX Preview: Orphaned Backslashes**
@@ -74,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **README: AI Agents & LLMs Keywords**: SEO-optimized intro with prominent keywords.
 - **README: Screenshots**: Interface and preview images embedded.
 
-## [1.0.0] - 2025-12-17
+## [1.0.0] - 2025-12-17T00:00:00+08:00
 
 ### Added
 - Initial Release: Auto-Academic-Paper V1

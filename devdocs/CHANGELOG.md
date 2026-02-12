@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.151] - 2026-02-12T20:55:00+08:00 (LaTeX Rendering: Backslash Space)
+### Fixed
+- **Backslash Control Space (\ )**:
+  - **Problem**: LaTeX control space command `\ ` (used after periods like `vs.\ `) was not handled by `parseLatexFormatting`, rendering as literal backslash.
+  - **Fix**: Added `.replace(/\\ /g, ' ')` to `processor.ts`.
+
 ## [1.9.150] - 2026-02-12T20:45:00+08:00 (LaTeX Rendering: addlinespace fix)
 ### Fixed
 - **Table Engine: addlinespace stripping**

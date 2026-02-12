@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] - 2026-02-12T20:55:00+08:00
+
+### Fixed
+- **LaTeX Rendering: Literal Backslash Control Space**
+  - Before: `vs.\ Traditional` rendered as `vs.\ Traditional` (literal backslash visible).
+  - After: `\ ` (backslash space) is correctly parsed as a standard space, rendering `vs. Traditional`.
+  - **Details**: Added handler for TeX control space command.
+
 ## [1.0.8] - 2026-02-12T20:45:00+08:00
 
 ### Fixed

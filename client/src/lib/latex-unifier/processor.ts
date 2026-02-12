@@ -266,6 +266,7 @@ export function processLatex(latex: string): SanitizeResult {
             .replace(/\{:\}/g, ':')
             .replace(/\{,\}/g, ',')
             .replace(/\\:/g, ':')
+            .replace(/\\ /g, ' ') // Control space (backslash space) -> standard space
             .replace(/\\\//g, '/')
             .replace(/\\\\/g, '<br/>')
             .replace(/\\newline/g, '<br/>')

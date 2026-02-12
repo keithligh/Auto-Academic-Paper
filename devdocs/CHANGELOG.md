@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.161] - 2026-02-13T02:06:00+08:00
+### Fixed
+- **LaTeX Export: Invalid TikZ Node Options**
+  - AI generates `\node [italic]` — not a valid pgfkeys key; crashes compilation.
+  - Fix: Step 14 converts `[italic]` → `[font=\itshape]`, `[bold]` → `[font=\bfseries]`.
+  - File: `server/ai/utils.ts` (lines 406-416).
+
+- **LaTeX Export: Duplicate Section Numbers**
+  - AI hardcodes `\section{6. Title}` — LaTeX auto-numbers, producing "6  6. Title".
+  - Fix: Step 15 strips number prefixes (`6. `, `3.2. `, `Section 6: `) from section commands.
+  - File: `server/ai/utils.ts` (lines 418-424).
+
+## [1.9.160] - 2026-02-13T01:58:00+08:00
+### Fixed
+- **LaTeX Export: Table Overspill Prevention**
+  - **Problem**: Tables with `\multirow{4}{*}{\parbox{2.5cm}{...}}` and wide column content exceeded page margins.
+  - **Fix**: Injected `\usepackage{adjustbox}` and wrapped `tabular`/`tabularx` with `\begin{adjustbox}{max width=\textwidth}`.
+  - **Files**: `server/ai/utils.ts` (step 4, step 13), `server/latexGenerator.ts` (line 238).
+
+- **LaTeX Export: CJK Font Regex Broadening**
+  - **Gap**: Previous regex `(?:min|bsmi)` missed `{bmin}` (found in `raw_response.log`).
+  - **Fix**: Broadened to `(?!gbsn\})[a-zA-Z]+` — catches ANY non-`gbsn` font.
+  - **File**: `server/ai/utils.ts` (step 9, line 379).
+
+- **LaTeX Export: TikZ "Extra }" Error (Step Ordering Fix)**
+  - **Root Cause**: `fixLatexBalance` (step 9) injected stray `}` inside `\begin{CJK}...\end{CJK}` environments. When inline CJK stripper (step 12) removed the wrappers, orphan `}` remained.
+  - **Fix**: Reordered steps — CJK handling (steps 9-10) now runs BEFORE balance fixer (step 11).
+  - **File**: `server/ai/utils.ts` (lines 373-393).
+  - **Technical**: Inline CJK wrappers are redundant (document-level `\begin{CJK*}` already wraps body). Stripping them prevents LaTeX environment conflicts inside `\node{}` arguments.
+
 ## [1.9.159] - 2026-02-12
 - **Fixed**: Potential rendering failure for Math/TikZ inside Bibliographies.
   - **Root Cause**: `processBibliography` created nested placeholders (`BLOCK(Math)` inside `BLOCK(Bib)`).

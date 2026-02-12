@@ -213,7 +213,7 @@ export async function generateLatex(
             || /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]/.test(analysis.abstract || "");
 
         const cjkPreamble = hasCJK ? "\\usepackage{CJKutf8}" : "";
-        const cjkStart = hasCJK ? "\\begin{CJK*}{UTF8}{min}" : "";
+        const cjkStart = hasCJK ? "\\begin{CJK*}{UTF8}{gbsn}" : "";
         const cjkEnd = hasCJK ? "\\end{CJK*}" : "";
         // =====================
 
@@ -234,6 +234,8 @@ export async function generateLatex(
 \\usepackage{tabularx}
 \\usepackage{booktabs} % Fixes \\toprule crashes
 \\usepackage{float}    % Fixes table drifting with [H]
+\\usepackage{multirow}
+\\usepackage{adjustbox} % Prevents table overspill
 ${cjkPreamble}
 
 % TikZ and diagram packages

@@ -7,7 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.0.16] - 2026-02-13T02:06:00+08:00
 
+### Fixed
+- **LaTeX Export: Invalid TikZ Node Options**
+  - **Problem**: AI generates `\node [italic] {...}` which crashes pgfkeys: `I do not know the key '/tikz/italic'`.
+  - **Fix**: Added step 14 to `sanitizeLatexForExport` that converts `[italic]` → `[font=\itshape]` and `[bold]` → `[font=\bfseries]`. Handles standalone, comma-prefixed, and comma-suffixed cases.
+
+- **LaTeX Export: Duplicate Section Numbers**
+  - **Problem**: AI hardcodes section numbers like `\section{6. Implications...}`. Since LaTeX auto-numbers sections, the compiled output shows "6  6. Implications...".
+  - **Fix**: Added step 15 to `sanitizeLatexForExport` that strips hardcoded number prefixes from `\section{}`, `\subsection{}`, and `\subsubsection{}` titles. Matches patterns like `6. `, `3.2. `, `1.2.3. `, and `Section 6: `.
+
+## [1.0.15] - 2026-02-13T01:58:00+08:00
+
+### Fixed
+- **LaTeX Export: Table Overspill Prevention**
+  - **Problem**: AI-generated tables (especially with `\multirow` and `\parbox` combinations) exceeded page margins in compiled PDFs.
+  - **Fix**: Injected `\usepackage{adjustbox}` package and wrapped all `tabular`/`tabularx` environments with `\begin{adjustbox}{max width=\textwidth}`. This auto-scales only tables that would overspill; correctly-sized tables pass through unmodified.
+  - **Scope**: Applied to both `sanitizeLatexForExport` (retroactive fix for old exports) and `latexGenerator.ts` (new documents).
+
+- **LaTeX Export: CJK Font Compatibility (Complete Fix)**
+  - **Problem**: Previous fix (v1.0.14) only covered `{min}` and `{bsmi}` fonts, but the AI also generates `{bmin}` which caused the same `font cyberb69 not found` error.
+  - **Fix**: Broadened regex from `(?:min|bsmi)` to `(?!gbsn\})[a-zA-Z]+` — now catches ANY non-standard CJK font family and normalizes to `{gbsn}` (Arphic Simplified).
+  - **Result**: Future-proof against new AI-generated font variants.
+
+- **LaTeX Export: TikZ "Extra }" Error (Root Cause Fix)**
+  - **Problem**: TikZ diagrams with CJK content failed to compile with `Extra }, or forgotten \endgroup` and `Did you forget a semicolon?` errors at lines containing `\node{Face\\(面子)}`.
+  - **Root Cause**: The balance fixer (`fixLatexBalance`) was running BEFORE the inline CJK stripper. It saw `\begin{CJK}...\end{CJK}` as environments and injected stray `}` to "fix" perceived brace imbalances. When the CJK stripper then removed the wrappers, those injected `}` were left behind as orphans.
+  - **Fix**: Reordered sanitization steps — CJK font normalization (step 9) and inline CJK stripping (step 10) now run BEFORE the balance fixer (step 11). The balance fixer operates on clean LaTeX without CJK environments to misinterpret.
+  - **Technical Detail**: Inline `\begin{CJK}` wrappers are redundant because the document-level `\begin{CJK*}{UTF8}{gbsn}` (from `latexGenerator.ts`) already wraps the entire body. Stripping them prevents structural conflicts with TikZ `\node{}` arguments, which cannot contain LaTeX environments.
 
 ## [1.0.14] - 2026-02-12T21:18:00+08:00
 

@@ -64,8 +64,9 @@ The system has been purged of the monolithic `latex.js` library. The `processor.
     - *Note*: TikZJax is the ONLY remaining "LaTeX" engine, used exclusively for diagrams.
     - *Constraint*: It requires external font assets (`fonts.css`).
 
-### 4. The "China-Friendly" Font Strategy (v1.6.42)
-To ensure accessibility in regions with restricted internet (e.g., China) and to fix "Missing character" / "nullfont" errors:
+### 4. The "China-Friendly" Font Strategy (v1.6.42 / v1.0.14)
+To ensure accessibility in regions with restricted internet (e.g., China) and robust export compatibility:
+
 - **CDN**: We bypassed `tikzjax.com` (often blocked/slow).
 - **Source**: We use **jsDelivr** (`cdn.jsdelivr.net`), which has robust global routing.
 - **Package**: We use `node-tikzjax` (instead of `tikzjax`), as it correctly exposes the `bakoma/ttf` font structure required by the CSS.

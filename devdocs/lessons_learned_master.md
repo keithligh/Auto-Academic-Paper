@@ -992,3 +992,39 @@
 - **Constraint**: The `LatexPreview.tsx` renderer typically does a single pass or linear replacement. If the inner block key is iterated before the outer block key, the inner block remains as a string literal inside the unwrapped outer block HTML.
 - **Fix**: The bibliography processor now returns **Raw HTML** instead of a block placeholder. This ensures that any inner placeholders remain exposed to the renderer's substitution pass.
 - **Lesson**: **Block Flatness Principle**. In a replacement-based rendering pipeline, implementation order matters. Late-stage processors should avoid wrapping content that may contain early-stage placeholders, or risk hiding them from the renderer.
+
+## 141. The "Default Font" Trap (v1.0.14 — 2026-02-13)
+- **Problem**: Users reported `pdfTeX error: font cyberb69 not found` when compiling CJK documents.
+- **Root Cause**: The generator used `\begin{CJK*}{UTF8}{min}`. The `{min}` family is often an alias for "Mincho" which maps to fonts like Cyberbit (`cyberb69`) that are not installed by default in many open-source TeX environments (like the one used by the user).
+- **Fix**: Switched to `{gbsn}` (Arphic PL SungtiL GB), which is a standard free font included in `texlive-lang-chinese`.
+- **Lesson**: **Stick to the Standards.** When choosing default fonts for a generator, always pick the "boring," widely-available open-source option (Arphic) rather than the "nice" commercial alias (Mincho), unless you are shipping the font files yourself. Compatibility > Aesthetics for default exports.
+
+## 142. The "Step Ordering" Trap (v1.9.160 / v1.0.15 — 2026-02-13)
+- **Problem**: TikZ diagrams with CJK content failed to compile with `Extra }, or forgotten \endgroup` errors at lines like `\node{Face\\(面子)}`.
+- **Root Cause**: The `fixLatexBalance` function (step 9) is a state machine that tracks `\begin{...}` and `\end{...}` environments. When it encounters `\end{CJK}`, it injects closing `}` braces to "fix" any perceived brace imbalances inside that environment. The inline CJK stripper (step 12) then removed the `\begin{CJK}...\end{CJK}` wrappers, but the injected `}` from the balance fixer remained behind as orphans.
+- **Fix**: Reordered sanitization steps — CJK font normalization (step 9) and inline CJK stripping (step 10) now run BEFORE the balance fixer (step 11). The balance fixer operates on clean LaTeX without CJK environments to misinterpret.
+- **Lesson**: **Pipeline Order Matters.** When building a multi-step sanitization pipeline, the order of operations is critical. Structural cleaners (like environment strippers) must run BEFORE semantic fixers (like balance fixers) that make assumptions about document structure. Otherwise, the fixer's injected content can become orphaned when the structure is later modified.
+
+## 143. The "Font Regex Incompleteness" Trap (v1.9.160 / v1.0.15 — 2026-02-13)
+- **Problem**: After fixing `{min}` and `{bsmi}` fonts (v1.0.14), users still reported `font cyberb69 not found` errors.
+- **Root Cause**: The AI generates CJK tags with MULTIPLE font families: `{min}`, `{bsmi}`, AND `{bmin}`. The regex `(?:min|bsmi)` only caught two of them.
+- **Fix**: Broadened the regex to `(?!gbsn\})[a-zA-Z]+` — now catches ANY non-`gbsn` font family using negative lookahead.
+- **Lesson**: **Enumerate vs. Exclude.** When writing defensive regexes for AI-generated content, prefer "catch everything EXCEPT the known-good pattern" over "catch these specific bad patterns." The AI's output space is unbounded; your regex should be too.
+
+## 144. The "Table Overspill" Problem (v1.9.160 / v1.0.15 — 2026-02-13)
+- **Problem**: AI-generated tables (especially with `\multirow{4}{*}{\parbox{2.5cm}{...}}` combinations) exceeded page margins in compiled PDFs.
+- **Root Cause**: The AI generates `tabularx{\textwidth}` which should fit, but when it uses `l` (left-aligned, no-wrap) columns combined with `\parbox` or `\multirow` with fixed widths, the total width can exceed `\textwidth`. `tabularx` computes `X` column widths to fit, but fixed-width content doesn't shrink.
+- **Fix**: Injected `\usepackage{adjustbox}` and wrapped all `tabular`/`tabularx` environments with `\begin{adjustbox}{max width=\textwidth}`. This auto-scales only tables that would overspill; correctly-sized tables pass through unmodified.
+- **Lesson**: **Defensive Wrapping.** When you cannot control the AI's table generation logic (column specs, content widths), use a defensive wrapper that only activates when needed. `adjustbox{max width=\textwidth}` is a no-op for correctly-sized tables but saves overspilling ones.
+
+## 145. The "Invalid TikZ Key" Trap (v1.9.161 / v1.0.16 — 2026-02-13)
+- **Problem**: AI generates `\node [italic] {text}` in TikZ diagrams. `italic` is NOT a valid TikZ/pgfkeys key — compilation crashes with `I do not know the key '/tikz/italic'`.
+- **Root Cause**: The AI confuses CSS/HTML styling attributes with TikZ options. In TikZ, font styling uses the `font=` key with LaTeX font commands.
+- **Fix**: Step 14 in `sanitizeLatexForExport` converts `[italic]` → `[font=\itshape]` and `[bold]` → `[font=\bfseries]`, handling standalone, comma-prefixed, and comma-suffixed cases.
+- **Lesson**: **AI-Generated Code Uses the Wrong DSL.** LLMs confuse domain-specific languages (TikZ options ≠ CSS properties). When sanitizing AI output, anticipate cross-domain confusion and translate common CSS/HTML idioms into the target DSL's syntax.
+
+## 146. The "Duplicate Section Number" Problem (v1.9.161 / v1.0.16 — 2026-02-13)
+- **Problem**: Compiled PDF shows "6  6. Implications for AI Literacy" — the section number appears twice.
+- **Root Cause**: The AI hardcodes section numbers in `\section{6. Implications...}`, but LaTeX's `\section{}` command auto-numbers sections. Both the auto-number and the hardcoded one render.
+- **Fix**: Step 15 in `sanitizeLatexForExport` strips hardcoded number prefixes (`6. `, `3.2. `, `1.2.3. `, `Section 6: `) from `\section{}`, `\subsection{}`, and `\subsubsection{}`.
+- **Lesson**: **Semantic vs. Presentational Content.** The AI treats section numbers as part of the title text (presentational), but LaTeX treats them as metadata (semantic, auto-generated). When the AI generates structured markup, always check if it's duplicating auto-generated content.

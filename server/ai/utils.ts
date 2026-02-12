@@ -344,6 +344,12 @@ export function sanitizeLatexForExport(latex: string): string {
     if (!clean.includes("\\usepackage{float}")) {
         clean = clean.replace(/\\documentclass(\[[^\]]*\])?\{[^}]+\}/, (m) => `${m}\n\\usepackage{float}`);
     }
+    if (!clean.includes("\\usepackage{multirow}")) {
+        clean = clean.replace(/\\documentclass(\[[^\]]*\])?\{[^}]+\}/, (m) => `${m}\n\\usepackage{multirow}`);
+    }
+    if (!clean.includes("\\usepackage{adjustbox}")) {
+        clean = clean.replace(/\\documentclass(\[[^\]]*\])?\{[^}]+\}/, (m) => `${m}\n\\usepackage{adjustbox}`);
+    }
 
     // 5. PLACEMENT ENFORCEMENT ([H])
     clean = clean.replace(/\\begin\{(table|figure|algorithm)(\*?)\}(?:\[[^\]]*\])?/g, '\\begin{$1$2}[H]');
@@ -364,11 +370,58 @@ export function sanitizeLatexForExport(latex: string): string {
     // 8. ORPHAN BACKTICK FIX
     clean = clean.replace(/`/g, "\\textasciigrave{}");
 
-    // 9. BALANCE FIXER
+    // 9. CJK FONT PATCH (Retroactive Fix for Old Exports)
+    // MUST RUN BEFORE balance fixer (step 11): the balance fixer tracks \begin{CJK}...\end{CJK}
+    // as environments and may inject stray `}` inside them. Stripping CJK AFTER would leave
+    // those injected `}` behind as orphans (root cause of "Extra }" in TikZ nodes).
+    // AI generates CJK with various font families: {min}, {bsmi}, {bmin}, etc.
+    // ALL of these fail on standard texlive. Normalize to {gbsn} (Arphic Simplified).
+    clean = clean.replace(/\\begin\{CJK\*?\}\{UTF8\}\{(?!gbsn\})[a-zA-Z]+\}/g, '\\begin{CJK*}{UTF8}{gbsn}');
+    clean = clean.replace(/\\begin\{CJK\}\{UTF8\}\{gbsn\}/g, '\\begin{CJK*}{UTF8}{gbsn}');
+    clean = clean.replace(/\\end\{CJK\}/g, '\\end{CJK*}');
+
+    // 10. INLINE CJK STRIPPER (Root Cause Fix for "Extra }" errors)
+    // The AI generates inline \begin{CJK}{UTF8}{font}中文\end{CJK} inside TikZ \node{},
+    // \parbox{}, table cells, and other command arguments. LaTeX environments CANNOT
+    // appear inside command arguments — they break the brace parser.
+    // The document-level \begin{CJK*}{UTF8}{gbsn} (from latexGenerator.ts) already
+    // wraps the ENTIRE body, so inline CJK wrappers are redundant. Strip them.
+    // SAFETY: Use [^\n]*? (single-line) to avoid consuming the document-level CJK wrapper.
+    clean = clean.replace(/\\begin\{CJK\*?\}\{UTF8\}\{[a-zA-Z]+\}([^\n]*?)\\end\{CJK\*?\}/g, '$1');
+
+    // 11. BALANCE FIXER (runs AFTER CJK stripping to avoid injecting stray braces)
     clean = fixLatexBalance(clean);
 
-    // 10. MATH MODE REPAIR
+    // 12. MATH MODE REPAIR
     clean = clean.replace(/(?<!\\)\$\s*([_^])\s*(\{[^}]*\}|[a-zA-Z0-9])/g, '$1$2$');
+
+    // 13. TABLE OVERSPILL FIX
+    // AI-generated tables (especially with \multirow/\parbox combos) often exceed
+    // page margins. Wrap tabularx and tabular with adjustbox to auto-scale.
+    // adjustbox{max width=\textwidth} only shrinks tables that are too wide;
+    // correctly-sized tables pass through unmodified.
+    clean = clean.replace(/\\begin\{(tabularx|tabular)\}/g, '\\begin{adjustbox}{max width=\\textwidth}\n\\begin{$1}');
+    clean = clean.replace(/\\end\{(tabularx|tabular)\}/g, '\\end{$1}\n\\end{adjustbox}');
+
+    // 14. TIKZ INVALID OPTION FIX
+    // AI generates \node [..., italic] or \node [italic] which are NOT valid TikZ keys.
+    // pgfkeys crashes: "I do not know the key '/tikz/italic'"
+    // Replace with valid TikZ font options.
+    // Handle standalone [italic], mixed [..., italic], and [italic, ...]
+    clean = clean.replace(/\[italic\]/g, '[font=\\itshape]');
+    clean = clean.replace(/\[bold\]/g, '[font=\\bfseries]');
+    clean = clean.replace(/,\s*italic(?=\s*[\],])/g, ', font=\\itshape');
+    clean = clean.replace(/,\s*bold(?=\s*[\],])/g, ', font=\\bfseries');
+    clean = clean.replace(/\[italic\s*,/g, '[font=\\itshape,');
+    clean = clean.replace(/\[bold\s*,/g, '[font=\\bfseries,');
+
+    // 15. DUPLICATE SECTION NUMBER FIX
+    // AI hardcodes section numbers: \section{6. Implications for...}
+    // LaTeX auto-numbers sections, producing "6  6. Implications for..."
+    // Strip the hardcoded number prefix from section/subsection/subsubsection titles.
+    // Matches: "6. ", "6.1. ", "6.1.2. ", "Section 6: ", "Section 6.1: "
+    clean = clean.replace(/\\(section|subsection|subsubsection)\{(\d+\.[\d.]*\s*)/g, '\\$1{');
+    clean = clean.replace(/\\(section|subsection|subsubsection)\{Section\s+\d+[\d.]*[:\s]+/gi, '\\$1{');
 
     return clean;
 }

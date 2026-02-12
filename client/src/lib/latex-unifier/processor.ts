@@ -275,7 +275,11 @@ export function processLatex(latex: string): SanitizeResult {
             .replace(/\(ref_(\d+)\)/g, '<span class="citation-placeholder">[ref_$1]</span>')
 
             // Special Symbols
-            .replace(/\\textcopyright(\{\})?/g, '©');
+            .replace(/\\textcopyright(\{\})?/g, '©')
+            // CJK Environment Stripping (inline)
+            // \begin{CJK}{encoding}{font}content\end{CJK} → content
+            // Browser renders Unicode natively; CJK wrapper is LaTeX-only font selection.
+            .replace(/\\begin\{CJK\*?\}\{[^}]*\}\{[^}]*\}([\s\S]*?)\\end\{CJK\*?\}/g, '$1');
 
         // 6. Restore Math (Immediate Protection Restoration)
         protectedText = protectedText.replace(/__MATH_PROTECT_(\d+)__/g, (m, idx) => mathPlaceholders[parseInt(idx)]);
@@ -740,49 +744,8 @@ export function processLatex(latex: string): SanitizeResult {
     });
 
 
-    // --- TABLE ENGINE REFACTORING (Phase 5) ---
-    const { sanitized: tableSanitized, blocks: tableBlocks } = processTables(content, parseLatexFormatting);
-    content = tableSanitized;
-    Object.assign(blocks, tableBlocks);
-
-    // --- PREAMBLE & JUNK CLEANUP (Migrated from LatexPreview) ---
-    // If \begin{document} exists, discard everything before it (AFTER extracting metadata/macros)
-    const docStart = content.indexOf('\\begin{document}');
-    if (docStart !== -1) {
-        content = content.substring(docStart + '\\begin{document}'.length);
-    }
-
-    // Remove valid document end
-    content = content.replace(/\\end\{document\}/g, '');
-
-    // Strip Comments
-    content = content.replace(/^\s*%.*$/gm, '');
-
-    // --- COMMAND STRIPPING (Fallback & Cleanup) ---
-    // Even if we sliced, these might appear in the body via inclusion or error
-    content = content.replace(/\\documentclass(\[[^\]]*\])?\{[^}]*\}/g, '');
-    content = content.replace(/\\usepackage(\[[^\]]*\])?\{[^}]*\}/g, '');
-    content = content.replace(/\\usetikzlibrary\{[^}]*\}/g, ''); // v1.9.127: Strip TikZ library imports
-    content = content.replace(/\\tableofcontents/g, '');
-    content = content.replace(/\\listoffigures/g, '');
-    content = content.replace(/\\listoftables/g, '');
-    content = content.replace(/\\input\{[^}]*\}/g, '');
-    content = content.replace(/\\include\{[^}]*\}/g, '');
-    content = content.replace(/\\maketitle/g, ''); // Handled by metadata extraction + header injection
-    content = content.replace(/\\begin\{CJK\*\}\{[^}]*\}\{[^}]*\}/g, ''); // Strip CJK wrapper start
-    content = content.replace(/\\end\{CJK\*\}/g, ''); // Strip CJK wrapper end
-    content = content.replace(/\\newpage/g, '');
-    content = content.replace(/\\clearpage/g, '');
-    content = content.replace(/\\pagebreak/g, '');
-    content = content.replace(/\\noindent/g, '');
-    content = content.replace(/\\vspace\{[^}]*\}/g, '');
-    content = content.replace(/\\hspace\{[^}]*\}/g, '');
-
-    // --- GHOST HEADER EXORCISM ---
-    content = content.replace(/\\section\*?\s*\{\s*(?:References|Bibliography|Works\s+Cited)\s*\}/gi, '');
-    content = content.replace(/\\subsection\*?\s*\{\s*(?:References|Bibliography|Works\s+Cited)\s*\}/gi, '');
-
     // --- MANUAL PARBOX WALKER ---
+    // MOVED (v1.9.149): Hoisted above table processing so it can be used in the table cell callback.
     const processParboxes = (txt: string): string => {
         let result = '';
         let i = 0;
@@ -844,6 +807,51 @@ export function processLatex(latex: string): SanitizeResult {
         }
         return result;
     };
+
+    // --- TABLE ENGINE REFACTORING (Phase 5) ---
+    // FIX (v1.9.149): Wrap callback to handle \parbox inside table cells
+    const { sanitized: tableSanitized, blocks: tableBlocks } = processTables(content, (cell) => parseLatexFormatting(processParboxes(cell)));
+    content = tableSanitized;
+    Object.assign(blocks, tableBlocks);
+
+    // --- PREAMBLE & JUNK CLEANUP (Migrated from LatexPreview) ---
+    // If \begin{document} exists, discard everything before it (AFTER extracting metadata/macros)
+    const docStart = content.indexOf('\\begin{document}');
+    if (docStart !== -1) {
+        content = content.substring(docStart + '\\begin{document}'.length);
+    }
+
+    // Remove valid document end
+    content = content.replace(/\\end\{document\}/g, '');
+
+    // Strip Comments
+    content = content.replace(/^\s*%.*$/gm, '');
+
+    // --- COMMAND STRIPPING (Fallback & Cleanup) ---
+    // Even if we sliced, these might appear in the body via inclusion or error
+    content = content.replace(/\\documentclass(\[[^\]]*\])?\{[^}]*\}/g, '');
+    content = content.replace(/\\usepackage(\[[^\]]*\])?\{[^}]*\}/g, '');
+    content = content.replace(/\\usetikzlibrary\{[^}]*\}/g, ''); // v1.9.127: Strip TikZ library imports
+    content = content.replace(/\\tableofcontents/g, '');
+    content = content.replace(/\\listoffigures/g, '');
+    content = content.replace(/\\listoftables/g, '');
+    content = content.replace(/\\input\{[^}]*\}/g, '');
+    content = content.replace(/\\include\{[^}]*\}/g, '');
+    content = content.replace(/\\maketitle/g, ''); // Handled by metadata extraction + header injection
+    content = content.replace(/\\begin\{CJK\*?\}\{[^}]*\}\{[^}]*\}/g, ''); // Strip CJK wrapper start (both CJK and CJK*)
+    content = content.replace(/\\end\{CJK\*?\}/g, ''); // Strip CJK wrapper end (both CJK and CJK*)
+    content = content.replace(/\\newpage/g, '');
+    content = content.replace(/\\clearpage/g, '');
+    content = content.replace(/\\pagebreak/g, '');
+    content = content.replace(/\\noindent/g, '');
+    content = content.replace(/\\vspace\{[^}]*\}/g, '');
+    content = content.replace(/\\hspace\{[^}]*\}/g, '');
+
+    // --- GHOST HEADER EXORCISM ---
+    content = content.replace(/\\section\*?\s*\{\s*(?:References|Bibliography|Works\s+Cited)\s*\}/gi, '');
+    content = content.replace(/\\subsection\*?\s*\{\s*(?:References|Bibliography|Works\s+Cited)\s*\}/gi, '');
+
+
     content = processParboxes(content);
 
     // Extract Bibliography (thebibliography environment)

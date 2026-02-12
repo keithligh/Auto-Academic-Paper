@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-02-12T20:35:00+08:00
+
+### Fixed
+- **LaTeX Rendering: Parbox inside Tables**
+  - `\parbox` inside `\multirow` (and other table cells) now renders correctly instead of appearing as literal text.
+  - **Details**: Updated the table processing engine to handle parboxes within cell content using a wrapped callback approach.
+  - **Impact**: Complex tables (like the Taxonomy of GenAI Adoption Barriers) now display correctly wrapped text in the preview.
+
 ## [1.0.6] - 2026-02-12T20:21:00+08:00
 
 ### Fixed

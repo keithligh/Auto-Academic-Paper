@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-02-12T20:21:00+08:00
+
+### Fixed
+- **Error Transparency: Swallowed Exception in 6 AI Adapters**
+  - `extractJson()` throws rich diagnostic errors (e.g., "No JSON object or array found", "AI_OUTPUT_TRUNCATED: Try reducing Enhancement Level"), but 6 of 7 adapters caught these and replaced them with a generic `"AI response was not valid JSON"` — destroying all context.
+  - **Fix**: All adapters now append the inner exception message: `"AI response was not valid JSON: <original error>"`.
+  - **Impact**: Users now see actionable error messages (e.g., truncation guidance) instead of opaque failures.
+  - **Affected**: `ollama.ts`, `openai.ts`, `grok.ts`, `gemini.ts`, `anthropic.ts`, `poe.ts` (×2 code paths).
+
 ## [1.0.5] - 2026-02-12T20:11:00+08:00
 
 ### Added

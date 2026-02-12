@@ -235,7 +235,7 @@ export class PoeProvider implements AIProvider {
                     return extractJson(content);
                 } catch (e) {
                     console.error("Failed to parse JSON response from Poe (WebSearch):", content);
-                    throw new Error("AI response was not valid JSON");
+                    throw new Error(`AI response was not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
                 }
 
             } catch (e: any) {
@@ -312,7 +312,7 @@ export class PoeProvider implements AIProvider {
             return extractJson(content);
         } catch (e) {
             console.error("Failed to parse JSON response from Poe:", content);
-            throw new Error("AI response was not valid JSON");
+            throw new Error(`AI response was not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
         }
     }
 

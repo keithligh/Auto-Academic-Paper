@@ -52,7 +52,7 @@ export class GeminiProvider implements AIProvider {
             return extractJson(text);
         } catch (e) {
             console.error("Failed to parse JSON response from Gemini:", text);
-            throw new Error("AI response was not valid JSON");
+            throw new Error(`AI response was not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
         }
     }
 }

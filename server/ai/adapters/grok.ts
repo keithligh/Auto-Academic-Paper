@@ -148,7 +148,7 @@ export class GrokProvider implements AIProvider {
             return extractJson(content);
         } catch (e) {
             console.error("Failed to parse JSON response from Grok:", content);
-            throw new Error("AI response was not valid JSON");
+            throw new Error(`AI response was not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
         }
     }
 

@@ -101,7 +101,7 @@ export class OpenAICompatibleProvider implements AIProvider {
             return extractJson(content);
         } catch (e) {
             console.error("Failed to parse JSON response:", content);
-            throw new Error("AI response was not valid JSON");
+            throw new Error(`AI response was not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
         }
     }
 

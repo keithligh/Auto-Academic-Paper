@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.159] - 2026-02-12
+- **Fixed**: Potential rendering failure for Math/TikZ inside Bibliographies.
+  - **Root Cause**: `processBibliography` created nested placeholders (`BLOCK(Math)` inside `BLOCK(Bib)`).
+  - **Fix**: Bibliography now returns raw HTML to keep inner placeholders exposed.
+
+## [1.9.158] - 2026-02-12
+- **Fixed**: Regression in newline rendering caused by a regex typo (`\\\\\\` vs `\\\\`).
+  - **Impact**: Bibliographies and Footers showed literal `\\` characters.
+  - **Fix**: Reverted regex to match double backslashes correctly.
+
+## [1.9.157] - 2026-02-12
+- **Fixed**: Bibliography Rendering (v2).
+  - **Root Cause**: `citation-engine.ts` was not designed to render bibliography content; it only handled grouping logic. The preview relied on raw text fallback for the `thebibliography` block.
+  - **Fix**: Added explicit `\begin{thebibliography}` handler in `processor.ts` to parse and format items correctly.
+
+## [1.9.156] - 2026-02-12
+- **Fixed**: Bibliography rendering backslash issue (`.\ https://`).
+  - **Root Cause**: Regex collision in `processor.ts`. `\ ` (control space) matcher consumed the second backslash of `\\ ` (newline), leaving an orphan `\`.
+  - **Fix**: Reordered replacements in `parseLatexFormatting`. Newlines (`\\`, `\newline`) are now processed strictly **before** control spaces (`\ `).
+
 ## [1.9.155] - 2026-02-12T20:58:00+08:00 (TikZ CJK Crash Fix)
 ### Fixed
 - **TikZ Engine: CJK Environment Stripping**:

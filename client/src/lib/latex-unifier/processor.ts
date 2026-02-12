@@ -263,15 +263,18 @@ export function processLatex(latex: string): SanitizeResult {
             .replace(/\\renewcommand\s*\{\\arraystretch\}\s*\{[0-9.]+\}/g, '') // Strip arraystretch
             .replace(/\\setlength\s*\{[^}]+\}\s*\{[^}]+\}/g, '') // Strip setlength
             // Punctuation and special
-            .replace(/\{:\}/g, ':')
-            .replace(/\{,\}/g, ',')
-            .replace(/\\:/g, ':')
-            .replace(/\\ /g, ' ') // Control space (backslash space) -> standard space
-            .replace(/\\\//g, '/')
-            .replace(/\\\\/g, '<br/>')
+            .replace(/\\\\/g, '<br/>') // FIX: Match double backslash (\\) -> <br/>
+
             .replace(/\\newline/g, '<br/>')
             .replace(/\\hrule/g, '<hr style="border: 0; border-top: 1px solid #ccc; margin: 1em 0;">')
             .replace(/\\footnotesize/g, '<span style="font-size: 0.8em;">')
+
+            // Punctuation and special
+            .replace(/\{:\}/g, ':')
+            .replace(/\{,\}/g, ',')
+            .replace(/\\:/g, ':')
+            .replace(/\\ /g, ' ') // Control space (backslash space) -> standard space - MUST BE AFTER NEWLINES
+            .replace(/\\\//g, '/')
             // Cleanup Residue: Handle raw (ref_X) that missed the compiler
             .replace(/\(ref_(\d+)\)/g, '<span class="citation-placeholder">[ref_$1]</span>')
 
@@ -742,6 +745,42 @@ export function processLatex(latex: string): SanitizeResult {
             ${cleaned}
             ${titleHtml}
         </div>`;
+    });
+
+    // --- MANUAL BIBLIOGRAPHY PARSING (v1.9.156) ---
+    // This allows the preview to render the full text of a manual bibliography block,
+    // applying standard formatting (bold, italic, url, newlines) to each entry.
+    // Previously, this block was treated as raw text, leaking backslashes and commands.
+    content = content.replace(/\\begin\{thebibliography\}\{[^}]*\}([\s\S]*?)\\end\{thebibliography\}/g, (m, body) => {
+        let bibHtml = '<div class="bibliography" style="margin-top: 4em; border-top: 1px solid #ccc; padding-top: 1em;"><h2>References</h2><ul style="list-style: none; padding: 0;">';
+
+        // Split by \bibitem
+        // Note: First split element is empty or pre-bibitem trash
+        const items = body.split(/\\bibitem\{([^}]*)\}/).slice(1);
+
+        // Loop in pairs: Key, Content
+        for (let i = 0; i < items.length; i += 2) {
+            const key = items[i];
+            const text = items[i + 1];
+            if (!key || !text) continue;
+
+            const formattedText = parseLatexFormatting(text.trim());
+
+            // Extract a number from key if it follows ref_X pattern, else use key
+            let label = key;
+            const match = key.match(/^ref_?(\d+)$/);
+            if (match) label = match[1];
+
+            bibHtml += `<li style="margin-bottom: 0.5em;"> [${label}] <span style="margin-left: 0.5em;"> ${formattedText}</span></li>`;
+        }
+
+        bibHtml += '</ul></div>';
+        // PREVENT NESTED BLOCKS (v1.9.159):
+        // Bibliography runs LATE. If \bibitem contained Math/TikZ, it's already a __BLOCK__.
+        // If we wrap it in createPlaceholder, we get a Block inside a Block.
+        // The renderer might fail to unwrap the inner block if iteration order is wrong.
+        // SAFE FIX: Return raw HTML string.
+        return bibHtml;
     });
 
 

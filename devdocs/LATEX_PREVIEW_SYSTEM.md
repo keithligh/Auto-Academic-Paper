@@ -221,6 +221,7 @@ We manually extract the bibliography environment to ensure citations are rendere
 - **Item Parsing**: Iterates through `\bibitem{key} content` entries.
 - **Rendering**: Generates a clean HTML `<div class="bibliography">` with an ordered list (`<ol>`).
 - **IEEE Formatting**: Citations are numbered `[1]`, `[2]`, matching the inline citation processor.
+- **Nested Block Safety (v1.9.159)**: We return **Raw HTML** instead of a placeholder. Since bibliography processing runs *after* Math/TikZ extraction, `\bibitem` content may already contain placeholders. Returning raw HTML ensures these inner placeholders remain exposed to the final substitution pass.
 
 ### 6b. Code Blocks (The Universal "Enclosure")
 **Supported Environments**: `verbatim`, `lstlisting`

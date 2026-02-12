@@ -961,3 +961,34 @@
 - **Root Cause**: The TikZ engine extracts raw LaTeX *independently* of the main document processor. While `processor.ts` cleaned the CJK wrappers from the main text, `tikz-engine.ts` grabbed the raw substring (which still had them) and sent it to TikZJax.
 - **Fix**: Added a dedicated CJK stripper to `tikz-engine.ts` that runs *before* its own ASCII sanitization.
 - **Lesson**: **Sanitization layers must be redundant.** In a multi-engine pipeline (Main Renderer + TikZ Engine + Math Engine), you cannot rely on "upstream" sanitization if the engines extract data from the raw source independently. Every engine needs its own immune system.
+
+## 137. The "Regex Collision" (v1.9.156 / v1.0.11 — 2026-02-12)
+- **Problem**: Table captions and Bibliographies containing `\ ` (control space) rendered correctly, BUT URLs preceded by a newline (`\\ \url{...}`) rendered as `.\ https://` (visible backslash).
+- **Root Cause**: **Order of Operations**. The processor ran `replace(/\\ /g, ' ')` **BEFORE** `replace(/\\\\/g, '<br/>')`.
+- **Mechanism**:
+    1. Input: `text \\ \url` (Newline + Space + URL).
+    2. Control Space Regex saw `\ ` (the *second* backslash of the newline + the following space) and replaced it with ` `.
+    3. Result: `text \ \url`. The first backslash of the newline was left behind as an orphan.
+    4. The Newline Regex (`\\\\`) ran *after*, but could no longer match because the double-backslash was gone.
+- **Fix**: Reordered replacements. Always process **Structural Commands** (Newlines `\\`) before **Content Commands** (Control Spaces `\ `).
+- **Lesson**: **Regexes are destructive.** When defining a pipeline of replacements, always process the *longest/most specific* patterns (like `\\`) before the *shorter/more general* ones (like `\ `) that might consume parts of the longer pattern.
+
+## 138. The "Bypass Bug" (v1.9.157 / v1.0.12 — 2026-02-12)
+- **Problem**: The regex fix in Lesson 137 *failed* to fix the Bibliography backslash.
+- **Root Cause**: The Bibliography content was **never entering the processor at all**. The `citation-engine` handled grouping logic but the `thebibliography` block fell through to the default "Raw Text" renderer in `processor.ts`.
+- **Insight**: We were fixing the logic (regex) inside the engine, but the data wasn't even *in* the engine. It was bypassing the formatter entirely.
+- **Fix**: Implemented a dedicated `processBibliography` handler in `processor.ts`. Now, `\bibitem` entries are explicitly parsed and fed into `parseLatexFormatting`.
+- **Lesson**: **Verify the Data Flow.** Before debugging the *processing logic*, verify that the data is inextricably *reaching* that logic. A perfect function is useless if it's never called.
+
+## 139. The "Typo Trap" (v1.9.158 / v1.0.13 — 2026-02-12)
+- **Problem**: Newlines (`\\`) stopped working in the footer and bibliography after the "fix" in v1.0.11.
+- **Root Cause**: **Human Error / Regex Typo**. In the haste to fix the order-of-operations bug (Lesson 137), I accidentally wrote `.replace(/\\\\\\/g, ...)` (matching triple backslash) instead of `.replace(/\\\\/g, ...)` (matching double backslash).
+- **Mechanism**: The regex looked plausible (`\\` -> escape -> `\\\\` -> escape? -> `\\\\\\`), but in JS regex literals, `\\` matches one backslash. `\\\\` matches two. `\\\\\\` matches three.
+- **Fix**: Reverted to correct regex.
+- **Lesson**: **Review your own Diffs.** When modifying regexes involving backslashes, count them three times. Then count them again.
+
+## 140. The "Nested Block" Hazard (v1.9.159 / v1.0.14 — 2026-02-12)
+- **Problem**: During system peer review, I realized that the `processBibliography` implementation (v1.0.12) wrapped items in `createPlaceholder`. This creates a vulnerability: if a citation contains Math or TikZ (processed earlier), it already contains a `LATEXPREVIEWBLOCK`. Wrapping it again creates a `BLOCK` inside a `BLOCK`.
+- **Constraint**: The `LatexPreview.tsx` renderer typically does a single pass or linear replacement. If the inner block key is iterated before the outer block key, the inner block remains as a string literal inside the unwrapped outer block HTML.
+- **Fix**: The bibliography processor now returns **Raw HTML** instead of a block placeholder. This ensures that any inner placeholders remain exposed to the renderer's substitution pass.
+- **Lesson**: **Block Flatness Principle**. In a replacement-based rendering pipeline, implementation order matters. Late-stage processors should avoid wrapping content that may contain early-stage placeholders, or risk hiding them from the renderer.

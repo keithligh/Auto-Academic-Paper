@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+
+
+
+## [1.0.14] - 2026-02-12T21:18:00+08:00
+
+### Fixed
+- **System Integrity: Nested Block Prevention**
+  - **Problem**: The `processBibliography` fix (v1.0.12) wrapped bibliography items in a `LATEXPREVIEWBLOCK`. If a citation contained Math or TikZ (which are processed earlier and already wrapped in blocks), this created a "Block inside a Block". The renderer often fails to resolve nested blocks, leaving raw placeholder strings in the output.
+  - **Fix**: Modified `processBibliography` to return raw HTML string instead of a placeholder block. This ensures inner placeholders remain exposed for substitution.
+
+## [1.0.13] - 2026-02-12T21:15:00+08:00
+
+### Fixed
+- **Regression: Newline Rendering**
+  - **Problem**: Newlines (`\\`) rendered as literal double backslashes or failed to break lines.
+  - **Root Cause**: A typo in the Phase 8 fix introduced a regex that matched *triple* backslashes (`\\\\\\`) instead of *double* backslashes (`\\\\`).
+  - **Fix**: Corrected the regex to `/\\\\/g`.
+
+## [1.0.12] - 2026-02-12T21:12:00+08:00
+
+### Fixed
+- **Bibliography Rendering: Partial Backslash Fix**
+  - **Problem**: Previous fix (v1.0.11) failed because the Bibliography was rendered as raw text, bypassing the processor entirely.
+  - **Fix**: Implemented a dedicated `processBibliography` parser in `processor.ts` that manually parses `\bibitem` entries and applies full LaTeX formatting (newlines, URLs, italics).
+  - **Result**: References now render with full visual fidelity, matching the main document style.
+
+## [1.0.11] - 2026-02-12T21:05:00+08:00
+
+### Fixed
+- **Bibliography Rendering: Visible Backslash in URLs**
+  - **Problem**: References rendered as `2025.\ https://...` instead of `2025. <br/> https://...`.
+  - **Root Cause**: Regex collision in `processor.ts`. The Control Space handler (`\ `) consumed the second backslash of the Newline command (`\\ `), breaking the newline replacement.
+  - **Fix**: Reordered regex replacements. `\\` (newline) is now processed *before* `\ ` (control space).
+
 ## [1.0.10] - 2026-02-12T20:58:00+08:00
 
 ### Fixed

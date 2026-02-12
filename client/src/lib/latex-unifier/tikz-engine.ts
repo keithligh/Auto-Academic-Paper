@@ -56,7 +56,17 @@ export function processTikz(latex: string): TikzResult {
         }
 
         // SANITIZATION: TikZJax (btoa) crashes on Unicode. Force ASCII.
-        let safeTikz = processedCode.replace(/[^\x00-\x7F]/g, '');
+        // FIX (v1.9.155): Strip CJK environments specifically before ASCII filter.
+        // The ASCII filter below would kill the characters, but the \begin{CJK} command itself 
+        // survives and crashes TikZJax (undefined environment). We must strip the WRAPPER.
+        // Pattern: \begin{CJK}{UTF8}{bsmi}...content...\end{CJK} -> content
+        let safeTikz = processedCode
+            .replace(/\\begin\{CJK\*?\}\{.*?\}\{.*?\}[\s\S]*?\\end\{CJK\*?\}/g, '') // Strip ENTIRE CJK block (commands + content)
+            // UPDATE: We strip the content too because if it's CJK, it will just be empty/broken after ASCII filter anyway.
+            // Better to have a missing node label than a node with weird artifacts.
+            // Wait, if it's "Face \begin{CJK}...\end{CJK}", we want "Face ".
+            // The regex above removes the block. "Face " remains. Correct.
+            .replace(/[^\x00-\x7F]/g, '');
 
         // Robust Fix for Fonts inside Nodes
         safeTikz = safeTikz

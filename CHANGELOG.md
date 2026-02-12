@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10] - 2026-02-12T20:58:00+08:00
+
+### Fixed
+- **TikZ Rendering: CJK Crash Fix**
+  - **Problem**: Diagrams containing `\begin{CJK}` environments (often injected by the document-level exporter) crashed the TikZ engine with `! LaTeX Error: Environment CJK undefined`.
+  - **Fix**: Added a dedicated stripper to `tikz-engine.ts` that removes CJK wrappers *before* the ASCII sanitization filter runs.
+  - **Result**: ASCII content survives, CJK characters are filtered out (preventing encoding crashes), and the engine runs without error.
+
 ## [1.0.9] - 2026-02-12T20:55:00+08:00
 
 ### Fixed

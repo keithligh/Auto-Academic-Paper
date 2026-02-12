@@ -955,3 +955,9 @@
 - **Root Cause**: The parser handled alphabetic commands (`\alpha`) and special escapes (`\%`), but missed the fundamental TeX primitive `\ ` (control space).
 - **Fix**: Added explicit handler for `\ ` -> ` ` (standard space).
 - **Lesson**: **TeX primitives are obscure.** Developers prioritize high-level macros (`\section`, `\cite`) but often miss low-level TeX glue (`\ `, `\~`, `\^`) until edge cases appear. Comprehensive parser testing requires a "TeX Primitive Torture Test".
+
+## 136. The "TikZ CJK Crash" (v1.9.155 / v1.0.10 — 2026-02-12)
+- **Problem**: `tikz-engine.ts` crashed with `! LaTeX Error: Environment CJK undefined` when users generated Chinese content.
+- **Root Cause**: The TikZ engine extracts raw LaTeX *independently* of the main document processor. While `processor.ts` cleaned the CJK wrappers from the main text, `tikz-engine.ts` grabbed the raw substring (which still had them) and sent it to TikZJax.
+- **Fix**: Added a dedicated CJK stripper to `tikz-engine.ts` that runs *before* its own ASCII sanitization.
+- **Lesson**: **Sanitization layers must be redundant.** In a multi-engine pipeline (Main Renderer + TikZ Engine + Math Engine), you cannot rely on "upstream" sanitization if the engines extract data from the raw source independently. Every engine needs its own immune system.

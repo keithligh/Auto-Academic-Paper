@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.155] - 2026-02-12T20:58:00+08:00 (TikZ CJK Crash Fix)
+### Fixed
+- **TikZ Engine: CJK Environment Stripping**:
+  - **Problem**: `tikz-engine.ts` extracts raw LaTeX content before `processor.ts` sanitizers run. This allowed `\begin{CJK}` wrappers to reach the TikZJax engine, which crashed because it lacks CJK support.
+  - **Fix**: Added regex `replace(/\\begin\{CJK\*?\}\{.*?\}\{.*?\}[\s\S]*?\\end\{CJK\*?\}/g, '')` to `safeTikz` pipeline in `tikz-engine.ts`.
+  - **Location**: Applied *before* the ASCII sanitization filter to ensure clean stripping of the wrapper commands.
+
 ## [1.9.151] - 2026-02-12T20:55:00+08:00 (LaTeX Rendering: Backslash Space)
 ### Fixed
 - **Backslash Control Space (\ )**:

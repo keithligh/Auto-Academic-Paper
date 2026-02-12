@@ -206,8 +206,8 @@ export function processTables(text: string, formatText: (s: string) => string): 
 
         const htmlRows = rows.map((row, index) => {
             // FIX (v1.9.114): Explicit Rule Parsing
-            // If this row is JUST a rule, mark the PREVIOUS row as having a border, and return empty.
-            if (row.trim().match(/^\\(hline|midrule|toprule|bottomrule|cline\{[^}]*\})$/)) {
+            // If this row is JUST a rule (or vertical spacer), mark the PREVIOUS row as having a border, and return empty.
+            if (row.trim().match(/^\\(hline|midrule|toprule|bottomrule|cline\{[^}]*\}|addlinespace(?:\[[^\]]*\])?)$/)) {
                 // We can't modify the previous HTML string easily here in a map.
                 // Better strategy: Return a null marker and handle in a second pass?
                 // Or: Since map doesn't look back easily without side effects, let's just return empty string 
@@ -216,7 +216,7 @@ export function processTables(text: string, formatText: (s: string) => string): 
                 return '';
             }
 
-            let cleanRow = row.replace(/\\(hline|midrule|toprule|bottomrule)/g, '');
+            let cleanRow = row.replace(/\\(hline|midrule|toprule|bottomrule|addlinespace(?:\[[^\]]*\])?)/g, '');
             // Strip \cline{X-Y} commands (partial horizontal lines)
             cleanRow = cleanRow.replace(/\\cline\{[^}]*\}/g, '');
 

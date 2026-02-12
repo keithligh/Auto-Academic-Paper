@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.150] - 2026-02-12T20:45:00+08:00 (LaTeX Rendering: addlinespace fix)
+### Fixed
+- **Table Engine: addlinespace stripping**
+  - **Problem**: `booktabs` command `\addlinespace` (often used after `\\`) was treated as start-of-row content by strict mode parser, appearing as literal text "addlinespace".
+  - **Fix**: Added `addlinespace(?:\[[^\]]*\])?` to both the "Skip Row" regex (L210) and "Clean Row" regex (L219).
+  - **Result**: Vertical spacers are cleanly stripped; they do not corrupt cell content or create malformed rows.
+
 ## [1.9.149] - 2026-02-12T20:35:00+08:00 (LaTeX Rendering: Parbox inside Tables)
 ### Fixed
 - **Parbox Rendering in Table Cells**:

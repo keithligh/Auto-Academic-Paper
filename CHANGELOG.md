@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-02-12T20:45:00+08:00
+
+### Fixed
+- **LaTeX Rendering: Ghost Text "addlinespace"**
+  - Before: `\addlinespace` command rendered as literal text "addlinespace" in table cells.
+  - After: `\addlinespace` is correctly recognized as a vertical spacer command and stripped (preserving table structure).
+  - **Details**: Updated strict table parser to treat `booktabs` spacing commands as valid non-content tokens.
+
 ## [1.0.7] - 2026-02-12T20:35:00+08:00
 
 ### Fixed

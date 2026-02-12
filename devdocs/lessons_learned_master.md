@@ -943,3 +943,15 @@
 - **Impact**: When Ollama parsing fails, users and developers see only "AI response was not valid JSON" with no indication of *why* — making debugging impossible without reading source code.
 - **Note**: Identified during this documentation review but deliberately **not fixed** in this release to follow the protocol of documenting first. The fix is identical to Lesson 90: `throw new Error(\`AI response was not valid JSON: ${e.message || String(e)}\`);`
 - **Lesson**: **Anti-patterns recur.** When fixing a bug pattern (swallowed exceptions), audit *all* adapters for the same pattern. A "Fixed in OpenRouter" doesn't mean "Fixed Everywhere". Apply fixes systematically, not surgically.
+
+## 134. The "Booktabs Spacer Command" (v1.9.150 / v1.0.8 — 2026-02-12)
+- **Problem**: Table rendering showed literal text "addlinespace" in the first cell of a row.
+- **Root Cause**: The `booktabs` package command `\addlinespace` (often used after `\\`) was treated as content by the strict table parser.
+- **Fix**: Updated `table-engine.ts` to strictly strip `\addlinespace` (and its optional arguments) from row content.
+- **Lesson**: **Visual spacers look like commands but act like whitespace.** Parsing logic often assumes "Command = Function" or "Text = Content". Spacers break this duality. They are "Command = Null Operation". Explicitly identify and strip them to preserve structural integrity.
+
+## 135. The "Control Space" Gap (v1.9.151 / v1.0.9 — 2026-02-12)
+- **Problem**: `vs.\ Traditional` rendered as `vs.\ Traditional` (literal backslash).
+- **Root Cause**: The parser handled alphabetic commands (`\alpha`) and special escapes (`\%`), but missed the fundamental TeX primitive `\ ` (control space).
+- **Fix**: Added explicit handler for `\ ` -> ` ` (standard space).
+- **Lesson**: **TeX primitives are obscure.** Developers prioritize high-level macros (`\section`, `\cite`) but often miss low-level TeX glue (`\ `, `\~`, `\^`) until edge cases appear. Comprehensive parser testing requires a "TeX Primitive Torture Test".

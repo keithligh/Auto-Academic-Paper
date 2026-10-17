@@ -6,6 +6,8 @@ Thank you to everyone who tried Auto-Academic-Paper, starred or forked the repos
 
 I am retiring the open-source release. The published version is now obsolete, and I no longer have the time needed to maintain and support it properly. Development has transitioned to closed source.
 
+A newer closed-source version is available at [autoacademic.com](https://autoacademic.com/). It is still free to use with your own API key (BYOK — Bring Your Own Key).
+
 This repository will remain here as a notice of that change. The former source code is no longer hosted here, and the old open-source version will not receive further maintenance or updates.
 
 ## What this means for existing users

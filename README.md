@@ -12,7 +12,7 @@ This repository will remain here as a notice of that change. The former source c
 
 ## What this means for existing users
 
-Previously released versions remain covered by their existing GNU Affero General Public License v3.0 (AGPLv3) licenses. This transition does not revoke those licenses or the rights already granted under them. Existing copies and forks remain subject to the applicable AGPLv3 terms.
+Previously released versions were offered under a dual-licensing model: the GNU Affero General Public License v3.0 (AGPLv3), or a separate commercial license by agreement. Existing copies and forks obtained under AGPLv3 remain subject to its terms, and any separately granted commercial licenses remain governed by their respective agreements. This transition does not itself revoke previously granted license rights.
 
 Thank you for being part of the project's open-source chapter.
 
